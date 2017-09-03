@@ -2,17 +2,6 @@ cpu 686
 ; word size:
 ;	i386	2 Bytes
 
-%macro ef 0
-push ebp
-mov ebp,esp
-%endmacro
-%macro lf 0
-mov esp,ebp
-pop ebp
-%endmacro
-%include "dev.asm"
-%include "sys.asm"
-
 
 multiboot_all4kaligned equ 1
 multiboot_withmemorymap equ 0

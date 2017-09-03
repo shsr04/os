@@ -1,10 +1,9 @@
-
+%define defined_dev_asm
 ; Calling convention (cdecl)
 ;	-> incoming arguments: [ebp+8],...
 ;	<- outgoing value: eax
 
 section .text
-
 global io_sendb
 io_sendb:
 push ebp

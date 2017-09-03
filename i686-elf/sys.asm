@@ -1,4 +1,5 @@
-
+%define defined_sys_asm
+%include "incl.asm"
 section .data
 gdtref	dw 0 ;limit
 		dd 0 ;base
