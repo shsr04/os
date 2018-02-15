@@ -48,7 +48,6 @@ kernel.elf: $(kernel-files) link-floppy.ld
 git-add:
 	git add *.c *.h *.asm *.ld bochs.conf Makefile
 	cd i686-elf && git add *.c *.h *.asm *.ld Makefile
-	cd i686-asm && git add *.asm Makefile
 	
 	
 clean:

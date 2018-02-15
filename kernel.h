@@ -14,6 +14,8 @@
 #define vga_mem (unsigned short*)0xB8000
 #define vga_color(fg,bg) ( ((byte)fg) | ((byte)bg) << 4 )
 #define vga_entry(ch,col) ( ((word)ch) | ((word)col) << 8 )
+#define vga_pitch 160 /* bytes until term[x][y+1] */
+#define vga_depth 2 /* bytes per entry */
 #define vga_black 0
 #define vga_blue 1
 #define vga_green 2
@@ -36,16 +38,7 @@
 #define checkb(num,b) (((num) & (1<<b))>>b)
 #define assert(x) do { if(!(x)) printerr('a'); } while(0)
 
-/* device drivers: devices.h */
-
-/* required user-supplied functions */
-/*void* memcpy(void *dest,void *src,int count) {
-	if(count==0) return dest;
-	byte *dp=(byte*)dest;
-	byte *sp=(byte*)src;
-	dp[count]=sp[count];
-	return memcpy(dp+1,sp+1,count-1);
-}*/
+/* device drivers: -> devices.h */
 
 /* standard integers */
 #ifdef _stdint_types

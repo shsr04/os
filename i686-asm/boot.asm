@@ -81,14 +81,15 @@ pop ebp
 
 ; use these VGA methods only in protected mode
 vgai dw 4
-%macro putc 1
+%macro putc 1-3 00h,0fh
 mov eax,0xb8000
 add ax,[vgai]
-mov bx,%1
-mov [eax],0fh ; white fg, black bg
-mov [eax+1],bx
-mov ax,[vgai]
-mov word [vgai],ax+2
+mov cl,%2
+shl cl,4
+or cl,%3 ; default: black bg, white fg
+mov byte [eax+1],cl ; vga_entry = color<<8 | symbol;
+mov byte [eax],%1
+add word [vgai],2
 %endmacro
 
 loader:
@@ -215,8 +216,17 @@ mov eax,0xb8000+4
 mov dword [eax],'I ' ; test
 iret
 nul_handler:
-xchg bx,bx
 iret
+clk_handler:
+;xchg bx,bx
+iret
+kbd_handler:
+;	if needed, initialize 8042 PS/2 controller first
+; incoming byte shows the pressed/released key
+pusha
+mov dx,71h
+jmp 0x08:kernel_area+2
+
 ; The IDT is nested in the loader sectors (to prevent overwriting by the kernel sectors)
 idt dq 0 ; int 00h
 dq 0 ; int 01h
@@ -230,7 +240,8 @@ setup_idt:
 make_int 08,nul_handler
 make_int 14,nul_handler
 make_int 30,int30handler
-make_int 71h,nul_handler
+make_int 70h,clk_handler
+make_int 71h,kbd_handler
 mov word [idtr],(idt.fin-idt-1)
 mov dword [idtr+2],idt
 lidt [idtr]
