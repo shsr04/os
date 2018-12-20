@@ -37,6 +37,11 @@ cmp bl,'\'
 je .esc1
 cmp byte [vgaEsc],1
 je .esc2
+cmp bl,0x0A ;new line
+je .esc2n
+cmp bl,0x09 ;tab
+je .esc2t
+
 mov byte [eax+1],cl ; vga_entry = color<<8 | symbol;
 mov byte [eax],bl
 add word [vgai],2
@@ -44,9 +49,16 @@ add byte [vgax],1
 cmp byte [vgax],80
 je .wrap
 jmp .end
-.wrap
+.wrap: ;wrap(dl: overflow) - sets the vga coords to the next line
 mov byte [vgax],0
 add byte [vgay],1
+add byte [vgax],dl
+shl dl,1
+add [vgai],dl
+cmp byte [vgay],VGAH
+jne .end
+mov byte [vgay],0
+mov word [vgai],0
 jmp .end
 .esc1:
 mov byte [vgaEsc],1
@@ -55,13 +67,25 @@ jmp .end
 mov byte [vgaEsc],0
 cmp bl,'n'
 je .esc2n
+cmp bl,'t'
+je .esc2t
 jmp .end
-.esc2n ; newline ('\n')
+.esc2n: ; newline ('\n', ascii 0x0A)
 cmp byte [vgax],VGAW
+mov dl,0
 je .wrap
 add byte [vgax],1
 add word [vgai],2
 jmp .esc2n
+.esc2t: ; tab ('\t', ascii 0x09)
+mov dl,4
+%rep 4
+add byte [vgax],1
+add word [vgai],2
+dec dl
+cmp byte [vgax],VGAW
+je .wrap
+%endrep
 .end:
 ret
 %macro printc 1-3 00h,0fh
@@ -82,6 +106,8 @@ jmp %%end
 %%end:
 %endmacro
 %macro prints 1-3 00h,0fh
+push ebx
+push esi
 mov esi,%1
 %%head: mov byte bl,[esi]
 cmp bl,00h
@@ -90,6 +116,8 @@ printc bl,%2,%3
 inc esi
 jmp %%head
 %%end:
+pop esi
+pop ebx
 %endmacro
 %macro vgaClear 0-1 00h ; TODO fix (problem??)
 push ebx

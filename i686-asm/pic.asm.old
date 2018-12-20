@@ -1,0 +1,76 @@
+; PIC macros - model 8259A (see Intel datasheet)
+; The programmable interrupt controller consists of PIC1 and PIC2 with the following I/O ports
+; PIC1: control 0x20, data 0x21
+; PIC2: control 0xa0, data 0xa1
+; in cascade mode, PIC2 acts as a slave and interrupts are cascaded
+; at system startup:
+;	IRQ 0..7 = INT 08h..0Fh (=> default offset 08h)
+;	IRQ 8..15 = 70h..77h (=> default offset 70h)
+bits 32
+section .data
+align 4
+pic1 db 0
+pic2 db 0
+%macro picRemap 0-2 0x70,0x78
+;save PIC masks
+in al,0x21
+mov [pic1],al
+in al,0xa1
+mov [pic2],al
+;send initialization word 1 (cascade mode)
+outb 0x20,0001_0001b
+outb 0xa0,0001_0001b
+;ICW 2, set new offsets
+outb 0x21,%1
+outb 0xa1,%2
+;ICW 3, set PIC1 as master and PIC2 as slave
+outb 0x21,0000_1000b
+outb 0xa1,0000_0000b
+;ICW 4, set 8086 mode
+outb 0x21,1
+outb 0xa1,1
+;restore PIC masks
+mov al,[pic1]
+out 0x21,al
+mov al,[pic2]
+out 0xa1,al
+%endmacro
+%macro picRemask 0-2 0x0,0x0
+mov al,%1
+out 0x21,al
+mov al,%2
+out 0xa1,al
+%endmacro
+%macro picReadISR 0 ;which IRQs are being serviced?
+;send "OCW3" command word
+outb 0x20,0x0b
+outb 0xa0,0x0b
+in al,0x20
+mov [%%r1],al
+in al,0xa0
+mov [%%r2],al
+mov al,[%%r1]
+mov ah,[%%r2] ; eax = pic2|pic1
+jmp %%end
+%%r1 db 0
+%%r2 db 0
+%%end:
+%endmacro
+%macro ioWait 0-1 0
+cmp %1,0
+je %%port
+%%cycle0 jmp %%cycle1
+%%cycle1 jmp %%end
+%%port: out 0x80,0
+%%end:
+%endmacro
+
+;in/out only work with the al register
+%macro inb 2
+in al,%1
+mov [%2],al
+%endmacro
+%macro outb 2
+mov al,%2
+out %1,al
+%endmacro

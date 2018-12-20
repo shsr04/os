@@ -1,0 +1,110 @@
+
+kernel.elf:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+00000000 <kernel_main>:
+   0:	55                   	push   ebp
+   1:	89 e5                	mov    ebp,esp
+   3:	83 ec 24             	sub    esp,0x24
+   6:	8d 45 e2             	lea    eax,[ebp-0x1e]
+   9:	89 c1                	mov    ecx,eax
+   b:	66 c7 41 1c 00 00    	mov    WORD PTR [ecx+0x1c],0x0
+  11:	c7 41 18 00 00 00 00 	mov    DWORD PTR [ecx+0x18],0x0
+  18:	c7 41 14 00 00 00 00 	mov    DWORD PTR [ecx+0x14],0x0
+  1f:	c7 41 10 00 00 00 00 	mov    DWORD PTR [ecx+0x10],0x0
+  26:	c7 41 0c 00 00 00 00 	mov    DWORD PTR [ecx+0xc],0x0
+  2d:	c7 41 08 21 00 00 00 	mov    DWORD PTR [ecx+0x8],0x21
+  34:	c7 41 04 74 69 6c 65 	mov    DWORD PTR [ecx+0x4],0x656c6974
+  3b:	c7 01 76 6f 6c 61    	mov    DWORD PTR [ecx],0x616c6f76
+  41:	89 04 24             	mov    DWORD PTR [esp],eax
+  44:	e8 07 00 00 00       	call   50 <print>
+  49:	83 c4 24             	add    esp,0x24
+  4c:	5d                   	pop    ebp
+  4d:	c3                   	ret    
+  4e:	66 90                	xchg   ax,ax
+
+00000050 <print>:
+  50:	55                   	push   ebp
+  51:	89 e5                	mov    ebp,esp
+  53:	56                   	push   esi
+  54:	83 ec 08             	sub    esp,0x8
+  57:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  5a:	89 45 f8             	mov    DWORD PTR [ebp-0x8],eax
+  5d:	c7 45 f4 00 00 00 00 	mov    DWORD PTR [ebp-0xc],0x0
+  64:	c7 45 f4 00 00 00 00 	mov    DWORD PTR [ebp-0xc],0x0
+  6b:	8b 45 f4             	mov    eax,DWORD PTR [ebp-0xc]
+  6e:	8b 4d f8             	mov    ecx,DWORD PTR [ebp-0x8]
+  71:	80 3c 01 00          	cmp    BYTE PTR [ecx+eax*1],0x0
+  75:	0f 84 47 00 00 00    	je     c2 <print+0x72>
+  7b:	8b 45 f4             	mov    eax,DWORD PTR [ebp-0xc]
+  7e:	8b 4d f8             	mov    ecx,DWORD PTR [ebp-0x8]
+  81:	8a 14 01             	mov    dl,BYTE PTR [ecx+eax*1]
+  84:	0f be c2             	movsx  eax,dl
+  87:	66 89 c6             	mov    si,ax
+  8a:	0f b7 c6             	movzx  eax,si
+  8d:	0d 00 0f 00 00       	or     eax,0xf00
+  92:	66 89 c6             	mov    si,ax
+  95:	a1 60 01 00 00       	mov    eax,ds:0x160
+  9a:	89 c1                	mov    ecx,eax
+  9c:	81 c1 01 00 00 00    	add    ecx,0x1
+  a2:	89 0d 60 01 00 00    	mov    DWORD PTR ds:0x160,ecx
+  a8:	8b 0d 64 01 00 00    	mov    ecx,DWORD PTR ds:0x164
+  ae:	66 89 34 41          	mov    WORD PTR [ecx+eax*2],si
+  b2:	8b 45 f4             	mov    eax,DWORD PTR [ebp-0xc]
+  b5:	05 01 00 00 00       	add    eax,0x1
+  ba:	89 45 f4             	mov    DWORD PTR [ebp-0xc],eax
+  bd:	e9 a9 ff ff ff       	jmp    6b <print+0x1b>
+  c2:	83 c4 08             	add    esp,0x8
+  c5:	5e                   	pop    esi
+  c6:	5d                   	pop    ebp
+  c7:	c3                   	ret    
+  c8:	0f 1f 84 00 00 00 00 	nop    DWORD PTR [eax+eax*1+0x0]
+  cf:	00 
+
+000000d0 <memcpy>:
+  d0:	55                   	push   ebp
+  d1:	89 e5                	mov    ebp,esp
+  d3:	56                   	push   esi
+  d4:	83 ec 1c             	sub    esp,0x1c
+  d7:	8b 45 10             	mov    eax,DWORD PTR [ebp+0x10]
+  da:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  dd:	8b 55 08             	mov    edx,DWORD PTR [ebp+0x8]
+  e0:	89 55 f4             	mov    DWORD PTR [ebp-0xc],edx
+  e3:	89 4d f0             	mov    DWORD PTR [ebp-0x10],ecx
+  e6:	89 45 ec             	mov    DWORD PTR [ebp-0x14],eax
+  e9:	81 7d ec 00 00 00 00 	cmp    DWORD PTR [ebp-0x14],0x0
+  f0:	0f 85 0b 00 00 00    	jne    101 <memcpy+0x31>
+  f6:	8b 45 f4             	mov    eax,DWORD PTR [ebp-0xc]
+  f9:	89 45 f8             	mov    DWORD PTR [ebp-0x8],eax
+  fc:	e9 3f 00 00 00       	jmp    140 <memcpy+0x70>
+ 101:	8b 45 ec             	mov    eax,DWORD PTR [ebp-0x14]
+ 104:	8b 4d f0             	mov    ecx,DWORD PTR [ebp-0x10]
+ 107:	8a 14 01             	mov    dl,BYTE PTR [ecx+eax*1]
+ 10a:	8b 45 ec             	mov    eax,DWORD PTR [ebp-0x14]
+ 10d:	8b 4d f4             	mov    ecx,DWORD PTR [ebp-0xc]
+ 110:	88 14 01             	mov    BYTE PTR [ecx+eax*1],dl
+ 113:	8b 45 f4             	mov    eax,DWORD PTR [ebp-0xc]
+ 116:	05 01 00 00 00       	add    eax,0x1
+ 11b:	8b 4d f0             	mov    ecx,DWORD PTR [ebp-0x10]
+ 11e:	81 c1 01 00 00 00    	add    ecx,0x1
+ 124:	8b 75 ec             	mov    esi,DWORD PTR [ebp-0x14]
+ 127:	81 ee 01 00 00 00    	sub    esi,0x1
+ 12d:	89 04 24             	mov    DWORD PTR [esp],eax
+ 130:	89 4c 24 04          	mov    DWORD PTR [esp+0x4],ecx
+ 134:	89 74 24 08          	mov    DWORD PTR [esp+0x8],esi
+ 138:	e8 93 ff ff ff       	call   d0 <memcpy>
+ 13d:	89 45 f8             	mov    DWORD PTR [ebp-0x8],eax
+ 140:	8b 45 f8             	mov    eax,DWORD PTR [ebp-0x8]
+ 143:	83 c4 1c             	add    esp,0x1c
+ 146:	5e                   	pop    esi
+ 147:	5d                   	pop    ebp
+ 148:	c3                   	ret    
+ 149:	66 90                	xchg   ax,ax
+ 14b:	66 90                	xchg   ax,ax
+ 14d:	66 90                	xchg   ax,ax
+ 14f:	90                   	nop
+
+00000150 <hang>:
+ 150:	eb fe                	jmp    150 <hang>

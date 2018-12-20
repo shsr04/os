@@ -14,15 +14,20 @@ align 4
 %include "pic.asm"
 %include "kbd.asm"
 %include "psc.asm"
+%include "clk.asm"
 %include "str.asm"
+%include "cmd.asm"
 cpuVendor times 4 dd 0
 cpuIdMax db 0
 cpuSignature dd 0
+db 0xFF
+currentTicks dd 0
 db 0xFF
 
 section .text
 kernel_start:
 vgaClear
+
 ;;; CPU identification
 mov eax,00h
 cpuid
@@ -42,10 +47,7 @@ printsi {'\n',0}
 picRemap
 picReadISR
 
-; TODO PS/2 keyboard setup
-; - get scancode set, self-test, ...
-; port 0x60 reads/writes data from/to a device or the controller itself
-; port 0x64 reads status/writes a command for the controller
+;;; PS/2 keyboard setup
 printsi {'PS/2: ',0}
 ; controller self test
 pscSelfTest
@@ -73,21 +75,30 @@ pscRead ;ACK
 pscWrite 0x00
 pscRead ;ACK
 pscRead ;scan code number
-itoa al
+strNumToCharc al
 printc al
+printsi {'\n',0}
+
+;;; Paging (see Intel Manual Vol. 3A, section 4.3 "32-bit Paging")
+; ...
 
 printsi {'\nHello.',0},vgaRed,vgaGreen
 
 ; TODO: 
-;- keyboard input (8042 PS/2 Controller, see devices.h)
-
+; - paging?
 ret
 
 isr:
+cmp dx,70h
+je .clk
 cmp dx,71h
 je .kbd
 .end popa 
 iret
+.clk:
+inc dword [clkTicks]
+;inc byte [0xb8050]
+jmp .end
 .kbd:
 in al,0x60
 ;xchg bx,bx
@@ -95,5 +106,19 @@ kbdScancodeToAscii al
 cmp al,0
 je .end
 printc al
+cmp al,0x0A
+je .kbd1
+kbdStoreChar al
+jmp .end
+.kbd1 mov eax,kbdCommandBuffer
+add eax,4
+cmdExec eax
+cmp eax,0
+jne .kbd2
+mov eax,kbdCommandBuffer
+add eax,4
+prints eax
+printsi {' not found\n',0}
+.kbd2 kbdClearBuffer
 jmp .end
 

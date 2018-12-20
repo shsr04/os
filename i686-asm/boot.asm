@@ -114,6 +114,7 @@ jmp setup_gdt
 ;						Type: 0 for data segment, 1 for code segment
 ;						(the following bits have different meanings for a data or code segment:)
 ;						- ExpandDown or Conforming: 0 for DS(!), 1 for CS(?)
+;							-> conforming CS: allows no calls from lower to higher rings (e.g. ring 0 to ring 3)?
 ;						- Writable or Readable: 1
 ;						Accessed: set by the CPU on access, leave at 0
 ;		limit_h		higher nibble of the limit
@@ -121,29 +122,51 @@ jmp setup_gdt
 ;						Granularity: interpret limit in 1B/4KB
 ;						DefaultSize/UpperBound: 
 ;						 - for CS/SS: 16/32 bit default operation/stack pointer size
-;							-> if CS: setting to 1 will cause a mess with opcodes, but enable jmps to 32-bit C code
+;							-> if CS: setting to 1 will enable jmps to 32-bit C code
 ;						 - for expand-down DS: limit interpreted as 64KB/4GB
 ;						LongSeg: set if 64-bit segment (only in IA32-e mode)
 ;		base_h		higher byte of the base
 ;	Selector:
 ;		index		13 bits: offset into the table
-;		flags		bits: TPP (Table: look in GDT/LDT, Privilige: Request Privilege Level 0-3 access)
+;		flags		bits: TPP (Table: look in GDT/LDT, Privilege: Request Privilege Level 0-3 access)
 ;					 (-> 0x08=1,0x10=2,0x1b=3,0x23=4,... in GDT with ring 0)
+; Flat Model: all segments can access the entire linear address space
+; Protected Model: separate CS and DS, for kernel and user (= 4 GDT entries), to prevent bugs
+;	- Provisional GDT -
+;	Selector	Type		Base/Limit		Privileges
+;	0x08		Code		full access		ring 0
+;	0x10		Data		full access		ring 0
+;	0x1b		Code		400K-FFFK		ring 3
+;	0x23		Data		1000K-2000K		ring 3
 gdt dq 0 ; the initial entry must be zero
-; set up CS
+; set up kernel CS (0000 .. FFFF*4KB = base 0x0000 0000, limit 0xFFFF FFFF => ~4GB size)
 dw 0xFFFF ; limit_l
 dw 0x0000 ; base_l
 db 0x00 ; base_m
 db 1001_1110b ;access (0x9A/0x9E)
 db (1100b<<4)|0xF ;flags|limit_h
 db 0x00 ;base_h
-; set up DS
-dw 0xFFFF 
+; set up kernel DS
+dw 0xFFFF
 dw 0x0000
 db 0x00
 db 1001_0010b ;access (0x92)
 db (1100b<<4)|0xF
 db 0x00
+; set up user CS (0040 0000 .. 0FFF*4KB = base 0x0040 0000, limit 0x00FF FFFF)
+dw 0x0FFF
+dw 0x0000
+db 0x40
+db 1111_1110b ;access (ring 3)
+db (1100b<<4)|0x0
+db 0x00
+; set up user DS
+dw 0x2000
+dw 0x0000
+db 0x00
+db 1111_0010b ;access (ring 3)
+db (1100b<<4)|0x0
+db 0x01
 .fin db 0fh
 gdtr dw 0000h ; limit (size-1)
 dd 0000000h ; base address
@@ -218,8 +241,9 @@ iret
 nul_handler:
 iret
 clk_handler:
-;xchg bx,bx
-iret
+pusha
+mov dx,70h
+jmp 0x08:kernel_area+2
 kbd_handler:
 ;	if needed, initialize 8042 PS/2 controller first
 ; incoming byte shows the pressed/released key
@@ -253,6 +277,9 @@ int 30 ; test
 
 ; enable A20 ; -> moved before enable_pm
 ;...
+
+;xchg bx,bx
+;jmp 0x1e:0 ; TODO why can ring 0 not call a ring 3 segment?
 
 ; jmp to kernel
 goto_kernel:

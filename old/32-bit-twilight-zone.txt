@@ -1,0 +1,20 @@
+;old warning:
+
+;;; ----- You are now entering the 32-bit "twilight zone" -----
+;;; [only if you don't use the bits 32 directive after loading the 32-bit CS]
+;;; Opcodes like mov ax,bx will be TRANSFORMED into mov eax,ebx by DEFAULT
+;;; And conversely: mov eax,ebx becomes mov ax,bx
+;;; Additionally: Things in 16-bit assembly will mess up!
+;;; [SOLVED] use the "bits 32" directive right after loading the CS
+;%define _32bit_twilight_zone
+%ifdef _32bit_twilight_zone
+%define _eax ax
+%define _ebx bx
+%define _ax eax
+%define _bx ebx
+%else
+%define _eax eax
+%define _ebx ebx
+%define _ax ax
+%define _bx bx
+%endif

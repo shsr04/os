@@ -1,0 +1,13 @@
+
+--- Calling convention ---
+Macros are wrappers for the internal functions
+A macro has to save all registers from being corrupted
+	%macro xyz 1
+	push ebx
+	push esi
+	mov esi,%1
+	call _xyz
+	pop esi
+	pop ebx
+	%endmacro
+EAX is the return register, it will probably hold a new value after a macro call

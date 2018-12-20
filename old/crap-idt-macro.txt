@@ -1,0 +1,9 @@
+;%define limit_l(limit_qw) ((limit_qw)&0xFFFF)
+;%define base_l(base_qw) ((base_qw)&0xFFFF)
+;%define base_m(base_qw) (((base_qw)>>16)&0xFF)
+;%define access(isCodeSeg,E_or_C) ((1<<7)|(1<<4)|((isCodeSeg)<<3)|((E_or_C)<<2)|(1<<1))
+;%define limit_h(limit_qw) (((limit_qw)>>16)&0x0F)
+;%define flags(granul,defsize) (((granul)<<3)|((defsize)<<2))
+;%define base_h(base_qw) (((base_qw)>>24)&0xFF)
+;%define segbase 0x0
+;%define seglimit 0xffffFFFF
