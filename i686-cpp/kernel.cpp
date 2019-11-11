@@ -3,71 +3,99 @@
 #endif
 
 #include "core.hpp"
+#include "initializer_list.hpp"
 #include "multiboot.h"
+#include "term.hpp"
 
 namespace mem {
-constexpr uint32 START = 2 * 1024 * 1024;
-uint32 END;
+constexpr uint32 KB = 1024;
+constexpr uint32 MB = 1024 * KB;
+
+constexpr uint32 HEAP_START = 2 * MB;
+constexpr uint32 HEAP_END = 22 * MB;
+
+template <uint32 BS, uint32 BN> class allocator {
+    uint32 next_free = 0;
+
+  public:
+    constexpr allocator() {
+        static_assert(BS * BN < HEAP_END - HEAP_START, "Not enough memory");
+    }
+
+    constexpr optional<uint32 *> allocate(uint32 blocks) {
+        if (blocks >= BN)
+            return {};
+        auto r = reinterpret_cast<uint32 *>(HEAP_START + BS * next_free);
+        next_free += blocks;
+        return r;
+    }
+    constexpr void deallocate(uint32 blocks) {
+        if (blocks > next_free) {
+            next_free=0;
+            return;
+        }
+        next_free -= max(blocks,next_free);
+    }
+};
+
+template <class T> class unique {
+    T *value_;
+
+  public:
+    template <class... U> unique(U... p) : value_(new T(p...)) {}
+    ~unique() { delete value_; }
+};
+
 } // namespace mem
 
-namespace term {
-constexpr int COLS = 80, ROWS = 25;
-volatile uint16 *VGA_BUF = reinterpret_cast<uint16 *>(0xb8000);
-
-struct {
-    int col = 0, row = 0;
-    uint8 colour = 0x0f;
-} Term;
-
-constexpr auto index(int col = Term.col, int row = Term.row) {
-    return (COLS * row) + col;
+namespace {
+mem::allocator<4 * sizeof(uint32), 1000> fast_allocator;
 }
 
-void set(int index, uint8 colour, char symbol) {
-    VGA_BUF[index] = static_cast<uint16>((colour << 8) | symbol);
+void *operator new(uint32 count) {
+    if (count >= 4 * sizeof(uint32)) {
+        array<char, 10> str;
+        term::write("Cannot allocate more than ",
+                    int_to_string(4 * sizeof(uint32), str), " bytes at once\n");
+        asm("hlt");
+    }
+    return fast_allocator.allocate(1).value;
 }
 
-void clear() {
-    for (int a = 0; a < COLS; a++) {
-        for (int b = 0; b < ROWS; b++) {
-            set(index(a, b), Term.colour, ' ');
+void operator delete(void *) noexcept {
+    fast_allocator.deallocate(1);
+}
+
+class linked_list {
+    struct node {
+        uint32 val;
+        node *next = nullptr;
+    } *head_ = nullptr, *tail_ = nullptr;
+
+  public:
+    linked_list() = default;
+    ~linked_list() {
+        while (head_ != tail_) {
+            node *next = head_->next;
+            delete head_;
+            head_ = next;
         }
     }
-}
-
-void write(char c) {
-    switch (c) {
-    case '\n':
-        Term.col = 0;
-        Term.row++;
-        break;
-    default:
-        set(index(), Term.colour, c);
-        Term.col++;
-        break;
+    void push(uint32 p) {
+        if (head_ == nullptr) {
+            head_ = new node{p};
+            tail_ = head_;
+            return;
+        }
+        tail_->next = new node{p};
     }
-    if (Term.col >= COLS) {
-        Term.col = 0;
-        Term.row++;
-    }
-    if (Term.row >= ROWS) {
-        Term.col = 0;
-        Term.row = 0;
-    }
-}
 
-void write(const char *const s) {
-    for (int a = 0; s[a] != 0; a++) {
-        write(s[a]);
+    optional<uint32> peek() {
+        if (tail_ == nullptr)
+            return {};
+        return tail_->val;
     }
-}
-
-template <uint32 N> void write(array<const char *const, N> s) {
-    for (auto a : s)
-        write(a);
-}
-
-} // namespace term
+};
 
 template <class F> class Runner {
     F f_;
@@ -82,17 +110,16 @@ template <class F> class Runner {
 
 extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     term::clear();
-    array<char, 10> str;
-    term::write("Loading... ");
-    term::write(int_to_string(magic, str));
-    term::write("\n");
+    array<char, 20> str;
+    term::write("Loaded GRUB info: ", int_to_string<16>(magic, str), "\n");
     if ((mb->flags & 1) == 1) {
-        mem::END = mem::START + (mb->mem_upper - 1) * 1024;
-        term::write("Mem areas loaded\n");
-        term::write("Mem size: ");
-        term::write(int_to_string(mem::END - mem::START, str));
-        term::write(" B\n");
+        term::write(
+            "Mem size: ", int_to_string(mb->mem_upper * mem::KB / mem::MB, str),
+            " MB\n");
     }
+    linked_list l;
+    l.push(520);
+    term::write(int_to_string(l.peek().value, str));
     auto x = [] { term::write("x!"); };
     term::write("Hello!\n");
 }
