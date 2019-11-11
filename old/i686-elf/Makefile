@@ -7,7 +7,7 @@ link-flags = --target=i686-elf -ffreestanding -nostdlib #-fno-builtin -nostdinc
 full-bin-flags = -w -std=c89 -ffreestanding -nostdlib
 kernel = kernel.out
 
-.PHONY: sim-bochs sim-qemu clean
+.PHONY: sim-bochs sim-qemu-bin clean
 
 default: multiboot.iso
 sim: sim-qemu-grub
@@ -49,7 +49,7 @@ sim-bochs: disk.img
 	bochs -f bochs.conf
 
 kernel-files = kernel0.o kernel.o
-kernel.out: $(kernel-files) link-grub.ld
+$(kernel): $(kernel-files) link-grub.ld
 	@echo --- Linking $^ to $@ ---
 	clang $(link-flags) -T link-grub.ld -o $@ $(kernel-files)
 
