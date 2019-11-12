@@ -56,6 +56,7 @@ template <uint32 BS, uint32 BN> class allocator {
     }
 
     constexpr optional<uint32> find_next_free() const {
+        /* BROKEN */
         for (auto a = 0; a < BN; a++) {
             if (!block_list[a])
                 return a;
@@ -73,8 +74,8 @@ template <uint32 BS, uint32 BN> class allocator {
     constexpr optional<bool> deallocate(void *p) {
         auto target = reinterpret_cast<uint32>(p) - mem::HEAP_START;
         if (!block_list[target]) {
-            return optional<bool>().fail(
-                "Deallocating empty field: this is a bug");
+            string<20> str;
+            return optional<bool>().fail("Deallocating already free block");
         }
         block_list.set(target, false);
         next_free = find_next_free().value;
@@ -86,7 +87,7 @@ allocator<4 * sizeof(uint32), 1000> fast_allocator;
 
 } // namespace
 
-void *operator new(uint32 count) {
+[[deprecated]] void *operator new(uint32 count) {
     if (count >= 4 * sizeof(uint32)) {
         array<char, 10> str;
         term::write("Cannot allocate more than ",

@@ -4,6 +4,7 @@
 
 #include "core.hpp"
 #include "mem.hpp"
+#include "ps2.hpp"
 #include "term.hpp"
 #include <initializer_list.hpp>
 #include <multiboot.h>
@@ -59,9 +60,24 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
             "Mem size: ", int_to_string(mb->mem_upper * mem::KB / mem::MB, str),
             " MB\n");
     }
-    linked_list l;
-    l.push(520);
-    term::write(int_to_string(l.peek().value, str), "\n");
+
+    ps2::disable_1();
+    ps2::disable_2();
+    ps2::flush_output();
+    uint8 cb = ps2::read_config();
+    term::write("PS/2: ");
+    cb &= 0b10111100; // disable interrupts and translation
+    ps2::write_config(cb);
+    if (ps2::test_controller() && ps2::test_port_1())
+        term::write("OK\n");
+    else
+        term::write("FAIL\n");
+    ps2::enable_1();
+    if(ps2::reset_1()) term::write("Device 1: OK");
+    uint16 t = 0;
+    while (!ps2::has_output_data()) ;
+    term::write(int_to_string<16>(ps2::get_output(),str));
+
     auto x = [] { term::write("x!"); };
     term::write("Hello!\n");
 }

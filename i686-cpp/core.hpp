@@ -48,7 +48,7 @@ constexpr uint32 digits(uint32 p) {
 
 template <int B = 10, uint32 N>
 constexpr const char *int_to_string(uint32 x, string<N> &r) {
-    static_assert(B == 10 || B == 16);
+    static_assert(B == 2 || B == 10 || B == 16);
     const auto i2c = [](auto x) -> char {
         if ((x % B) < 10)
             return '0' + (x % B);

@@ -26,5 +26,6 @@ push eax
 push ebx
 call kernel_main
 
+hlt
 hang:
 jmp hang
