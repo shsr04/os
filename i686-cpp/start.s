@@ -15,15 +15,15 @@
 .section .bss
 .align 16
 stack_bottom:
-.skip 4096
+.skip 65536
 stack_top:
 
 .section .text
 start:
-mov $stack_top, %esp
+mov stack_top, esp
 
-push %eax
-push %ebx
+push eax
+push ebx
 call kernel_main
 
 hang:

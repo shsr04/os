@@ -1,6 +1,6 @@
 default: kernel.elf
 
-TargetFlags := --target=i386-unknown-none	# magic!
+TargetFlags := --target=i686-unknown-none	# magic!
 WarningFlags := -Wall -Wextra -Wconversion
 CompileFlags := -std=c++17 -Oz -fno-exceptions -fno-rtti -I. -Iresources $(TargetFlags) $(WarningFlags)
 LinkFlags := -T link.ld
@@ -19,4 +19,4 @@ kernel.elf: start.o kernel.o
 %.o: %.cpp
 	clang++ -c $(CompileFlags) -o $@ $<
 %.o: %.s
-	clang++ -c $(TargetFlags) -o $@ $<
+	clang++ -c -masm=intel $(TargetFlags) -o $@ $<

@@ -1,70 +1,12 @@
-#if defined(__linux__) || !defined(__i386__)
-#error "The kernel must target i386 bare metal!"
+#if defined(__linux__)
+#error "The kernel must target bare metal!"
 #endif
 
 #include "core.hpp"
-#include "initializer_list.hpp"
-#include "multiboot.h"
+#include "mem.hpp"
 #include "term.hpp"
-
-namespace mem {
-constexpr uint32 KB = 1024;
-constexpr uint32 MB = 1024 * KB;
-
-constexpr uint32 HEAP_START = 2 * MB;
-constexpr uint32 HEAP_END = 22 * MB;
-
-template <uint32 BS, uint32 BN> class allocator {
-    uint32 next_free = 0;
-
-  public:
-    constexpr allocator() {
-        static_assert(BS * BN < HEAP_END - HEAP_START, "Not enough memory");
-    }
-
-    constexpr optional<uint32 *> allocate(uint32 blocks) {
-        if (blocks >= BN)
-            return {};
-        auto r = reinterpret_cast<uint32 *>(HEAP_START + BS * next_free);
-        next_free += blocks;
-        return r;
-    }
-    constexpr void deallocate(uint32 blocks) {
-        if (blocks > next_free) {
-            next_free=0;
-            return;
-        }
-        next_free -= max(blocks,next_free);
-    }
-};
-
-template <class T> class unique {
-    T *value_;
-
-  public:
-    template <class... U> unique(U... p) : value_(new T(p...)) {}
-    ~unique() { delete value_; }
-};
-
-} // namespace mem
-
-namespace {
-mem::allocator<4 * sizeof(uint32), 1000> fast_allocator;
-}
-
-void *operator new(uint32 count) {
-    if (count >= 4 * sizeof(uint32)) {
-        array<char, 10> str;
-        term::write("Cannot allocate more than ",
-                    int_to_string(4 * sizeof(uint32), str), " bytes at once\n");
-        asm("hlt");
-    }
-    return fast_allocator.allocate(1).value;
-}
-
-void operator delete(void *) noexcept {
-    fast_allocator.deallocate(1);
-}
+#include <initializer_list.hpp>
+#include <multiboot.h>
 
 class linked_list {
     struct node {
@@ -92,7 +34,7 @@ class linked_list {
 
     optional<uint32> peek() {
         if (tail_ == nullptr)
-            return {};
+            return optional<uint32>().fail("List empty");
         return tail_->val;
     }
 };
@@ -110,7 +52,7 @@ template <class F> class Runner {
 
 extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     term::clear();
-    array<char, 20> str;
+    string<20> str;
     term::write("Loaded GRUB info: ", int_to_string<16>(magic, str), "\n");
     if ((mb->flags & 1) == 1) {
         term::write(
@@ -119,7 +61,7 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     }
     linked_list l;
     l.push(520);
-    term::write(int_to_string(l.peek().value, str));
+    term::write(int_to_string(l.peek().value, str), "\n");
     auto x = [] { term::write("x!"); };
     term::write("Hello!\n");
 }

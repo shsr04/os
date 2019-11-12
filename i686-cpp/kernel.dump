@@ -1,0 +1,399 @@
+
+kernel.elf:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+00101000 <start>:
+  101000:	bc 00 30 11 00       	mov    $0x113000,%esp
+  101005:	50                   	push   %eax
+  101006:	53                   	push   %ebx
+  101007:	e8 1a 01 00 00       	call   101126 <kernel_main>
+
+0010100c <hang>:
+  10100c:	eb fe                	jmp    10100c <hang>
+  10100e:	cc                   	int3   
+  10100f:	cc                   	int3   
+
+00101010 <_Znwj>:
+  101010:	55                   	push   %ebp
+  101011:	89 e5                	mov    %esp,%ebp
+  101013:	83 7d 08 10          	cmpl   $0x10,0x8(%ebp)
+  101017:	72 01                	jb     10101a <_Znwj+0xa>
+  101019:	f4                   	hlt    
+  10101a:	8b 0d 00 30 11 00    	mov    0x113000,%ecx
+  101020:	89 c8                	mov    %ecx,%eax
+  101022:	c1 e0 04             	shl    $0x4,%eax
+  101025:	05 00 00 20 00       	add    $0x200000,%eax
+  10102a:	41                   	inc    %ecx
+  10102b:	89 0d 00 30 11 00    	mov    %ecx,0x113000
+  101031:	5d                   	pop    %ebp
+  101032:	c3                   	ret    
+
+00101033 <_ZdlPv>:
+  101033:	55                   	push   %ebp
+  101034:	89 e5                	mov    %esp,%ebp
+  101036:	a1 00 30 11 00       	mov    0x113000,%eax
+  10103b:	83 f8 01             	cmp    $0x1,%eax
+  10103e:	83 d0 ff             	adc    $0xffffffff,%eax
+  101041:	a3 00 30 11 00       	mov    %eax,0x113000
+  101046:	5d                   	pop    %ebp
+  101047:	c3                   	ret    
+
+00101048 <_ZN4term3setEihc>:
+  101048:	55                   	push   %ebp
+  101049:	89 e5                	mov    %esp,%ebp
+  10104b:	8b 45 08             	mov    0x8(%ebp),%eax
+  10104e:	0f be 4d 10          	movsbl 0x10(%ebp),%ecx
+  101052:	8b 55 0c             	mov    0xc(%ebp),%edx
+  101055:	c1 e2 08             	shl    $0x8,%edx
+  101058:	09 ca                	or     %ecx,%edx
+  10105a:	8b 0d 00 20 10 00    	mov    0x102000,%ecx
+  101060:	66 89 14 41          	mov    %dx,(%ecx,%eax,2)
+  101064:	5d                   	pop    %ebp
+  101065:	c3                   	ret    
+
+00101066 <_ZN4term5clearEv>:
+  101066:	55                   	push   %ebp
+  101067:	89 e5                	mov    %esp,%ebp
+  101069:	31 c0                	xor    %eax,%eax
+  10106b:	8b 0d 00 20 10 00    	mov    0x102000,%ecx
+  101071:	83 f8 50             	cmp    $0x50,%eax
+  101074:	74 21                	je     101097 <_ZN4term5clearEv+0x31>
+  101076:	ba 60 f0 ff ff       	mov    $0xfffff060,%edx
+  10107b:	85 d2                	test   %edx,%edx
+  10107d:	74 12                	je     101091 <_ZN4term5clearEv+0x2b>
+  10107f:	66 c7 84 11 a0 0f 00 	movw   $0xf20,0xfa0(%ecx,%edx,1)
+  101086:	00 20 0f 
+  101089:	81 c2 a0 00 00 00    	add    $0xa0,%edx
+  10108f:	eb ea                	jmp    10107b <_ZN4term5clearEv+0x15>
+  101091:	40                   	inc    %eax
+  101092:	83 c1 02             	add    $0x2,%ecx
+  101095:	eb da                	jmp    101071 <_ZN4term5clearEv+0xb>
+  101097:	5d                   	pop    %ebp
+  101098:	c3                   	ret    
+
+00101099 <_ZN4term5writeEc>:
+  101099:	55                   	push   %ebp
+  10109a:	89 e5                	mov    %esp,%ebp
+  10109c:	57                   	push   %edi
+  10109d:	56                   	push   %esi
+  10109e:	8a 4d 08             	mov    0x8(%ebp),%cl
+  1010a1:	80 f9 0a             	cmp    $0xa,%cl
+  1010a4:	75 0e                	jne    1010b4 <_ZN4term5writeEc+0x1b>
+  1010a6:	83 25 04 30 11 00 00 	andl   $0x0,0x113004
+  1010ad:	a1 08 30 11 00       	mov    0x113008,%eax
+  1010b2:	eb 38                	jmp    1010ec <_ZN4term5writeEc+0x53>
+  1010b4:	8b 15 04 30 11 00    	mov    0x113004,%edx
+  1010ba:	a1 08 30 11 00       	mov    0x113008,%eax
+  1010bf:	6b f0 50             	imul   $0x50,%eax,%esi
+  1010c2:	01 d6                	add    %edx,%esi
+  1010c4:	0f be c9             	movsbl %cl,%ecx
+  1010c7:	81 c9 00 0f 00 00    	or     $0xf00,%ecx
+  1010cd:	8b 3d 00 20 10 00    	mov    0x102000,%edi
+  1010d3:	66 89 0c 77          	mov    %cx,(%edi,%esi,2)
+  1010d7:	8d 4a 01             	lea    0x1(%edx),%ecx
+  1010da:	89 0d 04 30 11 00    	mov    %ecx,0x113004
+  1010e0:	83 fa 4f             	cmp    $0x4f,%edx
+  1010e3:	7c 0d                	jl     1010f2 <_ZN4term5writeEc+0x59>
+  1010e5:	83 25 04 30 11 00 00 	andl   $0x0,0x113004
+  1010ec:	40                   	inc    %eax
+  1010ed:	a3 08 30 11 00       	mov    %eax,0x113008
+  1010f2:	83 f8 19             	cmp    $0x19,%eax
+  1010f5:	7c 0e                	jl     101105 <_ZN4term5writeEc+0x6c>
+  1010f7:	83 25 04 30 11 00 00 	andl   $0x0,0x113004
+  1010fe:	83 25 08 30 11 00 00 	andl   $0x0,0x113008
+  101105:	5e                   	pop    %esi
+  101106:	5f                   	pop    %edi
+  101107:	5d                   	pop    %ebp
+  101108:	c3                   	ret    
+
+00101109 <_ZN4term5writeEPKc>:
+  101109:	55                   	push   %ebp
+  10110a:	89 e5                	mov    %esp,%ebp
+  10110c:	56                   	push   %esi
+  10110d:	8b 75 08             	mov    0x8(%ebp),%esi
+  101110:	8a 06                	mov    (%esi),%al
+  101112:	84 c0                	test   %al,%al
+  101114:	74 0d                	je     101123 <_ZN4term5writeEPKc+0x1a>
+  101116:	0f be c0             	movsbl %al,%eax
+  101119:	50                   	push   %eax
+  10111a:	e8 7a ff ff ff       	call   101099 <_ZN4term5writeEc>
+  10111f:	58                   	pop    %eax
+  101120:	46                   	inc    %esi
+  101121:	eb ed                	jmp    101110 <_ZN4term5writeEPKc+0x7>
+  101123:	5e                   	pop    %esi
+  101124:	5d                   	pop    %ebp
+  101125:	c3                   	ret    
+
+00101126 <kernel_main>:
+  101126:	55                   	push   %ebp
+  101127:	89 e5                	mov    %esp,%ebp
+  101129:	53                   	push   %ebx
+  10112a:	57                   	push   %edi
+  10112b:	56                   	push   %esi
+  10112c:	83 e4 f8             	and    $0xfffffff8,%esp
+  10112f:	83 ec 20             	sub    $0x20,%esp
+  101132:	8b 7d 08             	mov    0x8(%ebp),%edi
+  101135:	8b 5d 0c             	mov    0xc(%ebp),%ebx
+  101138:	e8 29 ff ff ff       	call   101066 <_ZN4term5clearEv>
+  10113d:	8d 74 24 08          	lea    0x8(%esp),%esi
+  101141:	56                   	push   %esi
+  101142:	53                   	push   %ebx
+  101143:	e8 e4 00 00 00       	call   10122c <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c>
+  101148:	59                   	pop    %ecx
+  101149:	5a                   	pop    %edx
+  10114a:	68 32 00 10 00       	push   $0x100032
+  10114f:	50                   	push   %eax
+  101150:	68 0c 00 10 00       	push   $0x10000c
+  101155:	e8 9d 00 00 00       	call   1011f7 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_>
+  10115a:	83 c4 0c             	add    $0xc,%esp
+  10115d:	f6 07 01             	testb  $0x1,(%edi)
+  101160:	74 27                	je     101189 <kernel_main+0x63>
+  101162:	8b 47 08             	mov    0x8(%edi),%eax
+  101165:	c1 e8 0a             	shr    $0xa,%eax
+  101168:	25 ff 0f 00 00       	and    $0xfff,%eax
+  10116d:	56                   	push   %esi
+  10116e:	50                   	push   %eax
+  10116f:	e8 1c 01 00 00       	call   101290 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c>
+  101174:	59                   	pop    %ecx
+  101175:	5a                   	pop    %edx
+  101176:	68 34 00 10 00       	push   $0x100034
+  10117b:	50                   	push   %eax
+  10117c:	68 27 00 10 00       	push   $0x100027
+  101181:	e8 71 00 00 00       	call   1011f7 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_>
+  101186:	83 c4 0c             	add    $0xc,%esp
+  101189:	89 e7                	mov    %esp,%edi
+  10118b:	83 27 00             	andl   $0x0,(%edi)
+  10118e:	83 67 04 00          	andl   $0x0,0x4(%edi)
+  101192:	68 08 02 00 00       	push   $0x208
+  101197:	57                   	push   %edi
+  101198:	e8 3d 01 00 00       	call   1012da <_ZN11linked_list4pushEj>
+  10119d:	58                   	pop    %eax
+  10119e:	59                   	pop    %ecx
+  10119f:	8b 47 04             	mov    0x4(%edi),%eax
+  1011a2:	85 c0                	test   %eax,%eax
+  1011a4:	74 04                	je     1011aa <kernel_main+0x84>
+  1011a6:	8b 00                	mov    (%eax),%eax
+  1011a8:	eb 02                	jmp    1011ac <kernel_main+0x86>
+  1011aa:	31 c0                	xor    %eax,%eax
+  1011ac:	56                   	push   %esi
+  1011ad:	50                   	push   %eax
+  1011ae:	e8 dd 00 00 00       	call   101290 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c>
+  1011b3:	59                   	pop    %ecx
+  1011b4:	5a                   	pop    %edx
+  1011b5:	bb 32 00 10 00       	mov    $0x100032,%ebx
+  1011ba:	53                   	push   %ebx
+  1011bb:	50                   	push   %eax
+  1011bc:	e8 62 01 00 00       	call   101323 <_ZN4term5writeIJPKcS2_EEEvDpT_>
+  1011c1:	58                   	pop    %eax
+  1011c2:	59                   	pop    %ecx
+  1011c3:	a1 5a 00 00 00       	mov    0x5a,%eax
+  1011c8:	0f b6 00             	movzbl (%eax),%eax
+  1011cb:	56                   	push   %esi
+  1011cc:	50                   	push   %eax
+  1011cd:	e8 5a 00 00 00       	call   10122c <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c>
+  1011d2:	59                   	pop    %ecx
+  1011d3:	5a                   	pop    %edx
+  1011d4:	53                   	push   %ebx
+  1011d5:	50                   	push   %eax
+  1011d6:	e8 48 01 00 00       	call   101323 <_ZN4term5writeIJPKcS2_EEEvDpT_>
+  1011db:	58                   	pop    %eax
+  1011dc:	59                   	pop    %ecx
+  1011dd:	68 1f 00 10 00       	push   $0x10001f
+  1011e2:	e8 22 ff ff ff       	call   101109 <_ZN4term5writeEPKc>
+  1011e7:	58                   	pop    %eax
+  1011e8:	57                   	push   %edi
+  1011e9:	e8 64 01 00 00       	call   101352 <_ZN11linked_listD2Ev>
+  1011ee:	58                   	pop    %eax
+  1011ef:	8d 65 f4             	lea    -0xc(%ebp),%esp
+  1011f2:	5e                   	pop    %esi
+  1011f3:	5f                   	pop    %edi
+  1011f4:	5b                   	pop    %ebx
+  1011f5:	5d                   	pop    %ebp
+  1011f6:	c3                   	ret    
+
+001011f7 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_>:
+  1011f7:	55                   	push   %ebp
+  1011f8:	89 e5                	mov    %esp,%ebp
+  1011fa:	56                   	push   %esi
+  1011fb:	83 ec 0c             	sub    $0xc,%esp
+  1011fe:	8b 45 10             	mov    0x10(%ebp),%eax
+  101201:	8b 4d 0c             	mov    0xc(%ebp),%ecx
+  101204:	8b 55 08             	mov    0x8(%ebp),%edx
+  101207:	89 55 f0             	mov    %edx,-0x10(%ebp)
+  10120a:	89 4d f4             	mov    %ecx,-0xc(%ebp)
+  10120d:	89 45 f8             	mov    %eax,-0x8(%ebp)
+  101210:	6a f4                	push   $0xfffffff4
+  101212:	5e                   	pop    %esi
+  101213:	85 f6                	test   %esi,%esi
+  101215:	74 0f                	je     101226 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_+0x2f>
+  101217:	ff 74 35 fc          	pushl  -0x4(%ebp,%esi,1)
+  10121b:	e8 e9 fe ff ff       	call   101109 <_ZN4term5writeEPKc>
+  101220:	58                   	pop    %eax
+  101221:	83 c6 04             	add    $0x4,%esi
+  101224:	eb ed                	jmp    101213 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_+0x1c>
+  101226:	83 c4 0c             	add    $0xc,%esp
+  101229:	5e                   	pop    %esi
+  10122a:	5d                   	pop    %ebp
+  10122b:	c3                   	ret    
+
+0010122c <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c>:
+  10122c:	55                   	push   %ebp
+  10122d:	89 e5                	mov    %esp,%ebp
+  10122f:	53                   	push   %ebx
+  101230:	57                   	push   %edi
+  101231:	56                   	push   %esi
+  101232:	8b 4d 0c             	mov    0xc(%ebp),%ecx
+  101235:	8b 45 08             	mov    0x8(%ebp),%eax
+  101238:	49                   	dec    %ecx
+  101239:	31 ff                	xor    %edi,%edi
+  10123b:	85 c0                	test   %eax,%eax
+  10123d:	74 2b                	je     10126a <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c+0x3e>
+  10123f:	89 c3                	mov    %eax,%ebx
+  101241:	83 e3 0f             	and    $0xf,%ebx
+  101244:	89 da                	mov    %ebx,%edx
+  101246:	80 ca 30             	or     $0x30,%dl
+  101249:	88 c6                	mov    %al,%dh
+  10124b:	80 c6 06             	add    $0x6,%dh
+  10124e:	80 e6 0f             	and    $0xf,%dh
+  101251:	80 c6 41             	add    $0x41,%dh
+  101254:	83 fb 0a             	cmp    $0xa,%ebx
+  101257:	0f b6 f2             	movzbl %dl,%esi
+  10125a:	0f b6 d6             	movzbl %dh,%edx
+  10125d:	0f 42 d6             	cmovb  %esi,%edx
+  101260:	88 51 01             	mov    %dl,0x1(%ecx)
+  101263:	41                   	inc    %ecx
+  101264:	c1 e8 04             	shr    $0x4,%eax
+  101267:	47                   	inc    %edi
+  101268:	eb d1                	jmp    10123b <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c+0xf>
+  10126a:	c6 41 01 00          	movb   $0x0,0x1(%ecx)
+  10126e:	d1 ef                	shr    %edi
+  101270:	8b 75 0c             	mov    0xc(%ebp),%esi
+  101273:	85 ff                	test   %edi,%edi
+  101275:	74 11                	je     101288 <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c+0x5c>
+  101277:	8a 06                	mov    (%esi),%al
+  101279:	32 01                	xor    (%ecx),%al
+  10127b:	88 06                	mov    %al,(%esi)
+  10127d:	32 01                	xor    (%ecx),%al
+  10127f:	88 01                	mov    %al,(%ecx)
+  101281:	30 06                	xor    %al,(%esi)
+  101283:	4f                   	dec    %edi
+  101284:	49                   	dec    %ecx
+  101285:	46                   	inc    %esi
+  101286:	eb eb                	jmp    101273 <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c+0x47>
+  101288:	8b 45 0c             	mov    0xc(%ebp),%eax
+  10128b:	5e                   	pop    %esi
+  10128c:	5f                   	pop    %edi
+  10128d:	5b                   	pop    %ebx
+  10128e:	5d                   	pop    %ebp
+  10128f:	c3                   	ret    
+
+00101290 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c>:
+  101290:	55                   	push   %ebp
+  101291:	89 e5                	mov    %esp,%ebp
+  101293:	53                   	push   %ebx
+  101294:	57                   	push   %edi
+  101295:	56                   	push   %esi
+  101296:	8b 4d 0c             	mov    0xc(%ebp),%ecx
+  101299:	8b 45 08             	mov    0x8(%ebp),%eax
+  10129c:	8d 71 ff             	lea    -0x1(%ecx),%esi
+  10129f:	31 ff                	xor    %edi,%edi
+  1012a1:	6a 0a                	push   $0xa
+  1012a3:	5b                   	pop    %ebx
+  1012a4:	85 c0                	test   %eax,%eax
+  1012a6:	74 0e                	je     1012b6 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c+0x26>
+  1012a8:	31 d2                	xor    %edx,%edx
+  1012aa:	f7 f3                	div    %ebx
+  1012ac:	80 ca 30             	or     $0x30,%dl
+  1012af:	88 56 01             	mov    %dl,0x1(%esi)
+  1012b2:	46                   	inc    %esi
+  1012b3:	47                   	inc    %edi
+  1012b4:	eb ee                	jmp    1012a4 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c+0x14>
+  1012b6:	c6 46 01 00          	movb   $0x0,0x1(%esi)
+  1012ba:	d1 ef                	shr    %edi
+  1012bc:	89 c8                	mov    %ecx,%eax
+  1012be:	85 ff                	test   %edi,%edi
+  1012c0:	74 11                	je     1012d3 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c+0x43>
+  1012c2:	8a 10                	mov    (%eax),%dl
+  1012c4:	32 16                	xor    (%esi),%dl
+  1012c6:	88 10                	mov    %dl,(%eax)
+  1012c8:	32 16                	xor    (%esi),%dl
+  1012ca:	88 16                	mov    %dl,(%esi)
+  1012cc:	30 10                	xor    %dl,(%eax)
+  1012ce:	4f                   	dec    %edi
+  1012cf:	4e                   	dec    %esi
+  1012d0:	40                   	inc    %eax
+  1012d1:	eb eb                	jmp    1012be <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c+0x2e>
+  1012d3:	89 c8                	mov    %ecx,%eax
+  1012d5:	5e                   	pop    %esi
+  1012d6:	5f                   	pop    %edi
+  1012d7:	5b                   	pop    %ebx
+  1012d8:	5d                   	pop    %ebp
+  1012d9:	c3                   	ret    
+
+001012da <_ZN11linked_list4pushEj>:
+  1012da:	55                   	push   %ebp
+  1012db:	89 e5                	mov    %esp,%ebp
+  1012dd:	56                   	push   %esi
+  1012de:	8b 45 08             	mov    0x8(%ebp),%eax
+  1012e1:	8b 08                	mov    (%eax),%ecx
+  1012e3:	8b 15 00 30 11 00    	mov    0x113000,%edx
+  1012e9:	89 d6                	mov    %edx,%esi
+  1012eb:	c1 e6 04             	shl    $0x4,%esi
+  1012ee:	42                   	inc    %edx
+  1012ef:	89 15 00 30 11 00    	mov    %edx,0x113000
+  1012f5:	83 a6 04 00 20 00 00 	andl   $0x0,0x200004(%esi)
+  1012fc:	85 c9                	test   %ecx,%ecx
+  1012fe:	8b 4d 0c             	mov    0xc(%ebp),%ecx
+  101301:	89 8e 00 00 20 00    	mov    %ecx,0x200000(%esi)
+  101307:	8d 8e 00 00 20 00    	lea    0x200000(%esi),%ecx
+  10130d:	74 0a                	je     101319 <_ZN11linked_list4pushEj+0x3f>
+  10130f:	6a 04                	push   $0x4
+  101311:	5a                   	pop    %edx
+  101312:	03 50 04             	add    0x4(%eax),%edx
+  101315:	89 d0                	mov    %edx,%eax
+  101317:	eb 05                	jmp    10131e <_ZN11linked_list4pushEj+0x44>
+  101319:	89 08                	mov    %ecx,(%eax)
+  10131b:	83 c0 04             	add    $0x4,%eax
+  10131e:	89 08                	mov    %ecx,(%eax)
+  101320:	5e                   	pop    %esi
+  101321:	5d                   	pop    %ebp
+  101322:	c3                   	ret    
+
+00101323 <_ZN4term5writeIJPKcS2_EEEvDpT_>:
+  101323:	55                   	push   %ebp
+  101324:	89 e5                	mov    %esp,%ebp
+  101326:	56                   	push   %esi
+  101327:	83 ec 08             	sub    $0x8,%esp
+  10132a:	8b 45 0c             	mov    0xc(%ebp),%eax
+  10132d:	8b 4d 08             	mov    0x8(%ebp),%ecx
+  101330:	89 4d f4             	mov    %ecx,-0xc(%ebp)
+  101333:	89 45 f8             	mov    %eax,-0x8(%ebp)
+  101336:	6a f8                	push   $0xfffffff8
+  101338:	5e                   	pop    %esi
+  101339:	85 f6                	test   %esi,%esi
+  10133b:	74 0f                	je     10134c <_ZN4term5writeIJPKcS2_EEEvDpT_+0x29>
+  10133d:	ff 74 35 fc          	pushl  -0x4(%ebp,%esi,1)
+  101341:	e8 c3 fd ff ff       	call   101109 <_ZN4term5writeEPKc>
+  101346:	58                   	pop    %eax
+  101347:	83 c6 04             	add    $0x4,%esi
+  10134a:	eb ed                	jmp    101339 <_ZN4term5writeIJPKcS2_EEEvDpT_+0x16>
+  10134c:	83 c4 08             	add    $0x8,%esp
+  10134f:	5e                   	pop    %esi
+  101350:	5d                   	pop    %ebp
+  101351:	c3                   	ret    
+
+00101352 <_ZN11linked_listD2Ev>:
+  101352:	55                   	push   %ebp
+  101353:	89 e5                	mov    %esp,%ebp
+  101355:	8b 45 08             	mov    0x8(%ebp),%eax
+  101358:	8b 08                	mov    (%eax),%ecx
+  10135a:	8b 50 04             	mov    0x4(%eax),%edx
+  10135d:	39 d1                	cmp    %edx,%ecx
+  10135f:	74 07                	je     101368 <_ZN11linked_listD2Ev+0x16>
+  101361:	8b 49 04             	mov    0x4(%ecx),%ecx
+  101364:	89 08                	mov    %ecx,(%eax)
+  101366:	eb f5                	jmp    10135d <_ZN11linked_listD2Ev+0xb>
+  101368:	5d                   	pop    %ebp
+  101369:	c3                   	ret    
