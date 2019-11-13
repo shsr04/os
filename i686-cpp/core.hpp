@@ -14,40 +14,42 @@ template <class T> constexpr T min(T a, T b) { return a < b ? a : b; }
 template <class T, uint32 N> class array {
   protected:
     static_assert(N > 0, "Please do not create an empty array");
-    T data[N];
+    T data_[N];
+    int index_ = 0;
 
-    template <class U> bool is_equal(const U &p, int n) const {
-        for (int a = 0; a < n; a++) {
+  public:
+    constexpr array() : data_{} {}
+    template <class... U>
+    constexpr array(U&&... p) : data_{static_cast<T>(p)...} {}
+    //constexpr array(T p[N]) : data_(p) {}
+
+    constexpr auto &operator[](int i) { return data_[i]; }
+    constexpr auto operator[](int i) const { return data_[i]; }
+
+    constexpr auto &index() { return index_; }
+    constexpr auto &operator*() { return data_[index_]; }
+    constexpr auto operator++() { index_++; }
+
+    template <uint32 M> constexpr bool operator==(const array<T, M> &p) const {
+        for (int a = 0; a < min(N, M); a++) {
             if (operator[](a) != p[a])
                 return false;
         }
         return true;
     }
-
-  public:
-    constexpr array() : data{0} {}
-    template <class... U>
-    constexpr array(U... p) : data{static_cast<T>(p)...} {}
-    constexpr array(T p[N]) : data(p) {}
-
-    constexpr T &operator[](int i) { return data[i]; }
-    constexpr T operator[](int i) const { return data[i]; }
-    template <uint32 M> constexpr bool operator==(const array<T, M> &p) const {
-        return is_equal(p, min(N, M));
-    }
     template <uint32 M> constexpr auto operator+(const array<T, M> &p) const {
-        array<T, N + M> r(data);
+        array<T, N + M> r(data_);
         for (int a = size(); a < p.size(); a++) {
             r[a] = p[a - size()];
         }
         return r;
     }
 
-    constexpr auto begin() const { return data; }
-    constexpr auto end() const { return data + N; }
+    constexpr auto begin() const { return data_; }
+    constexpr auto end() const { return data_ + N; }
     constexpr auto size() const { return static_cast<int>(N); }
 
-    // constexpr operator T *() { return data; }
+    // constexpr operator T *() { return data_; }
 };
 template <uint32 N> class string : public array<char, N> {
   public:
@@ -60,7 +62,20 @@ template <uint32 N> class string : public array<char, N> {
         }
         return true;
     }
-    const char *str() const { return this->data; }
+    /**
+     * Create a string literal from this string object.
+     */
+    const char *str() const { return this->data_; }
+};
+
+template <class T, class U> class pair {
+  public:
+    T _1;
+    U _2;
+
+    pair() = default;
+    pair(T p1, U p2) : _1(p1), _2(p2) {}
+    pair(pair<T, U> const &) = delete;
 };
 
 template <bool V> struct bi_state {

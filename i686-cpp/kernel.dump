@@ -5,395 +5,1710 @@ kernel.elf:     file format elf32-i386
 Disassembly of section .text:
 
 00101000 <start>:
-  101000:	bc 00 30 11 00       	mov    $0x113000,%esp
-  101005:	50                   	push   %eax
-  101006:	53                   	push   %ebx
-  101007:	e8 1a 01 00 00       	call   101126 <kernel_main>
+  101000:	89 25 00 40 11 00    	mov    DWORD PTR ds:0x114000,esp
+  101006:	50                   	push   eax
+  101007:	53                   	push   ebx
+  101008:	e8 88 06 00 00       	call   101695 <kernel_main>
+  10100d:	f4                   	hlt    
 
-0010100c <hang>:
-  10100c:	eb fe                	jmp    10100c <hang>
-  10100e:	cc                   	int3   
-  10100f:	cc                   	int3   
+0010100e <hang>:
+  10100e:	eb fe                	jmp    10100e <hang>
 
-00101010 <_Znwj>:
-  101010:	55                   	push   %ebp
-  101011:	89 e5                	mov    %esp,%ebp
-  101013:	83 7d 08 10          	cmpl   $0x10,0x8(%ebp)
-  101017:	72 01                	jb     10101a <_Znwj+0xa>
-  101019:	f4                   	hlt    
-  10101a:	8b 0d 00 30 11 00    	mov    0x113000,%ecx
-  101020:	89 c8                	mov    %ecx,%eax
-  101022:	c1 e0 04             	shl    $0x4,%eax
-  101025:	05 00 00 20 00       	add    $0x200000,%eax
-  10102a:	41                   	inc    %ecx
-  10102b:	89 0d 00 30 11 00    	mov    %ecx,0x113000
-  101031:	5d                   	pop    %ebp
-  101032:	c3                   	ret    
+00101010 <halt()>:
+  101010:	55                   	push   ebp
+  101011:	89 e5                	mov    ebp,esp
+  101013:	f4                   	hlt    
+  101014:	eb fe                	jmp    101014 <halt()+0x4>
 
-00101033 <_ZdlPv>:
-  101033:	55                   	push   %ebp
-  101034:	89 e5                	mov    %esp,%ebp
-  101036:	a1 00 30 11 00       	mov    0x113000,%eax
-  10103b:	83 f8 01             	cmp    $0x1,%eax
-  10103e:	83 d0 ff             	adc    $0xffffffff,%eax
-  101041:	a3 00 30 11 00       	mov    %eax,0x113000
-  101046:	5d                   	pop    %ebp
-  101047:	c3                   	ret    
+00101016 <term::set(int, unsigned char, char)>:
+  101016:	55                   	push   ebp
+  101017:	89 e5                	mov    ebp,esp
+  101019:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  10101c:	0f be 4d 10          	movsx  ecx,BYTE PTR [ebp+0x10]
+  101020:	8b 55 0c             	mov    edx,DWORD PTR [ebp+0xc]
+  101023:	c1 e2 08             	shl    edx,0x8
+  101026:	09 ca                	or     edx,ecx
+  101028:	8b 0d 00 30 10 00    	mov    ecx,DWORD PTR ds:0x103000
+  10102e:	66 89 14 41          	mov    WORD PTR [ecx+eax*2],dx
+  101032:	5d                   	pop    ebp
+  101033:	c3                   	ret    
 
-00101048 <_ZN4term3setEihc>:
-  101048:	55                   	push   %ebp
-  101049:	89 e5                	mov    %esp,%ebp
-  10104b:	8b 45 08             	mov    0x8(%ebp),%eax
-  10104e:	0f be 4d 10          	movsbl 0x10(%ebp),%ecx
-  101052:	8b 55 0c             	mov    0xc(%ebp),%edx
-  101055:	c1 e2 08             	shl    $0x8,%edx
-  101058:	09 ca                	or     %ecx,%edx
-  10105a:	8b 0d 00 20 10 00    	mov    0x102000,%ecx
-  101060:	66 89 14 41          	mov    %dx,(%ecx,%eax,2)
-  101064:	5d                   	pop    %ebp
-  101065:	c3                   	ret    
+00101034 <term::clear()>:
+  101034:	55                   	push   ebp
+  101035:	89 e5                	mov    ebp,esp
+  101037:	31 c0                	xor    eax,eax
+  101039:	8b 0d 00 30 10 00    	mov    ecx,DWORD PTR ds:0x103000
+  10103f:	83 f8 50             	cmp    eax,0x50
+  101042:	74 21                	je     101065 <term::clear()+0x31>
+  101044:	ba 60 f0 ff ff       	mov    edx,0xfffff060
+  101049:	85 d2                	test   edx,edx
+  10104b:	74 12                	je     10105f <term::clear()+0x2b>
+  10104d:	66 c7 84 11 a0 0f 00 	mov    WORD PTR [ecx+edx*1+0xfa0],0xf20
+  101054:	00 20 0f 
+  101057:	81 c2 a0 00 00 00    	add    edx,0xa0
+  10105d:	eb ea                	jmp    101049 <term::clear()+0x15>
+  10105f:	40                   	inc    eax
+  101060:	83 c1 02             	add    ecx,0x2
+  101063:	eb da                	jmp    10103f <term::clear()+0xb>
+  101065:	5d                   	pop    ebp
+  101066:	c3                   	ret    
 
-00101066 <_ZN4term5clearEv>:
-  101066:	55                   	push   %ebp
-  101067:	89 e5                	mov    %esp,%ebp
-  101069:	31 c0                	xor    %eax,%eax
-  10106b:	8b 0d 00 20 10 00    	mov    0x102000,%ecx
-  101071:	83 f8 50             	cmp    $0x50,%eax
-  101074:	74 21                	je     101097 <_ZN4term5clearEv+0x31>
-  101076:	ba 60 f0 ff ff       	mov    $0xfffff060,%edx
-  10107b:	85 d2                	test   %edx,%edx
-  10107d:	74 12                	je     101091 <_ZN4term5clearEv+0x2b>
-  10107f:	66 c7 84 11 a0 0f 00 	movw   $0xf20,0xfa0(%ecx,%edx,1)
-  101086:	00 20 0f 
-  101089:	81 c2 a0 00 00 00    	add    $0xa0,%edx
-  10108f:	eb ea                	jmp    10107b <_ZN4term5clearEv+0x15>
-  101091:	40                   	inc    %eax
-  101092:	83 c1 02             	add    $0x2,%ecx
-  101095:	eb da                	jmp    101071 <_ZN4term5clearEv+0xb>
-  101097:	5d                   	pop    %ebp
-  101098:	c3                   	ret    
+00101067 <term::write(char)>:
+  101067:	55                   	push   ebp
+  101068:	89 e5                	mov    ebp,esp
+  10106a:	56                   	push   esi
+  10106b:	0f be 4d 08          	movsx  ecx,BYTE PTR [ebp+0x8]
+  10106f:	83 f9 09             	cmp    ecx,0x9
+  101072:	74 26                	je     10109a <term::write(char)+0x33>
+  101074:	83 f9 0a             	cmp    ecx,0xa
+  101077:	74 33                	je     1010ac <term::write(char)+0x45>
+  101079:	a1 e0 40 11 00       	mov    eax,ds:0x1140e0
+  10107e:	6b 15 e4 40 11 00 50 	imul   edx,DWORD PTR ds:0x1140e4,0x50
+  101085:	01 c2                	add    edx,eax
+  101087:	81 c9 00 0f 00 00    	or     ecx,0xf00
+  10108d:	8b 35 00 30 10 00    	mov    esi,DWORD PTR ds:0x103000
+  101093:	66 89 0c 56          	mov    WORD PTR [esi+edx*2],cx
+  101097:	40                   	inc    eax
+  101098:	eb 08                	jmp    1010a2 <term::write(char)+0x3b>
+  10109a:	a1 e0 40 11 00       	mov    eax,ds:0x1140e0
+  10109f:	83 c0 04             	add    eax,0x4
+  1010a2:	a3 e0 40 11 00       	mov    ds:0x1140e0,eax
+  1010a7:	83 f8 50             	cmp    eax,0x50
+  1010aa:	7c 14                	jl     1010c0 <term::write(char)+0x59>
+  1010ac:	83 25 e0 40 11 00 00 	and    DWORD PTR ds:0x1140e0,0x0
+  1010b3:	a1 e4 40 11 00       	mov    eax,ds:0x1140e4
+  1010b8:	40                   	inc    eax
+  1010b9:	a3 e4 40 11 00       	mov    ds:0x1140e4,eax
+  1010be:	eb 05                	jmp    1010c5 <term::write(char)+0x5e>
+  1010c0:	a1 e4 40 11 00       	mov    eax,ds:0x1140e4
+  1010c5:	83 f8 19             	cmp    eax,0x19
+  1010c8:	7c 0e                	jl     1010d8 <term::write(char)+0x71>
+  1010ca:	83 25 e0 40 11 00 00 	and    DWORD PTR ds:0x1140e0,0x0
+  1010d1:	83 25 e4 40 11 00 00 	and    DWORD PTR ds:0x1140e4,0x0
+  1010d8:	5e                   	pop    esi
+  1010d9:	5d                   	pop    ebp
+  1010da:	c3                   	ret    
 
-00101099 <_ZN4term5writeEc>:
-  101099:	55                   	push   %ebp
-  10109a:	89 e5                	mov    %esp,%ebp
-  10109c:	57                   	push   %edi
-  10109d:	56                   	push   %esi
-  10109e:	8a 4d 08             	mov    0x8(%ebp),%cl
-  1010a1:	80 f9 0a             	cmp    $0xa,%cl
-  1010a4:	75 0e                	jne    1010b4 <_ZN4term5writeEc+0x1b>
-  1010a6:	83 25 04 30 11 00 00 	andl   $0x0,0x113004
-  1010ad:	a1 08 30 11 00       	mov    0x113008,%eax
-  1010b2:	eb 38                	jmp    1010ec <_ZN4term5writeEc+0x53>
-  1010b4:	8b 15 04 30 11 00    	mov    0x113004,%edx
-  1010ba:	a1 08 30 11 00       	mov    0x113008,%eax
-  1010bf:	6b f0 50             	imul   $0x50,%eax,%esi
-  1010c2:	01 d6                	add    %edx,%esi
-  1010c4:	0f be c9             	movsbl %cl,%ecx
-  1010c7:	81 c9 00 0f 00 00    	or     $0xf00,%ecx
-  1010cd:	8b 3d 00 20 10 00    	mov    0x102000,%edi
-  1010d3:	66 89 0c 77          	mov    %cx,(%edi,%esi,2)
-  1010d7:	8d 4a 01             	lea    0x1(%edx),%ecx
-  1010da:	89 0d 04 30 11 00    	mov    %ecx,0x113004
-  1010e0:	83 fa 4f             	cmp    $0x4f,%edx
-  1010e3:	7c 0d                	jl     1010f2 <_ZN4term5writeEc+0x59>
-  1010e5:	83 25 04 30 11 00 00 	andl   $0x0,0x113004
-  1010ec:	40                   	inc    %eax
-  1010ed:	a3 08 30 11 00       	mov    %eax,0x113008
-  1010f2:	83 f8 19             	cmp    $0x19,%eax
-  1010f5:	7c 0e                	jl     101105 <_ZN4term5writeEc+0x6c>
-  1010f7:	83 25 04 30 11 00 00 	andl   $0x0,0x113004
-  1010fe:	83 25 08 30 11 00 00 	andl   $0x0,0x113008
-  101105:	5e                   	pop    %esi
-  101106:	5f                   	pop    %edi
-  101107:	5d                   	pop    %ebp
-  101108:	c3                   	ret    
+001010db <term::write(char const*)>:
+  1010db:	55                   	push   ebp
+  1010dc:	89 e5                	mov    ebp,esp
+  1010de:	56                   	push   esi
+  1010df:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  1010e2:	8a 06                	mov    al,BYTE PTR [esi]
+  1010e4:	84 c0                	test   al,al
+  1010e6:	74 0d                	je     1010f5 <term::write(char const*)+0x1a>
+  1010e8:	0f be c0             	movsx  eax,al
+  1010eb:	50                   	push   eax
+  1010ec:	e8 76 ff ff ff       	call   101067 <term::write(char)>
+  1010f1:	58                   	pop    eax
+  1010f2:	46                   	inc    esi
+  1010f3:	eb ed                	jmp    1010e2 <term::write(char const*)+0x7>
+  1010f5:	5e                   	pop    esi
+  1010f6:	5d                   	pop    ebp
+  1010f7:	c3                   	ret    
 
-00101109 <_ZN4term5writeEPKc>:
-  101109:	55                   	push   %ebp
-  10110a:	89 e5                	mov    %esp,%ebp
-  10110c:	56                   	push   %esi
-  10110d:	8b 75 08             	mov    0x8(%ebp),%esi
-  101110:	8a 06                	mov    (%esi),%al
-  101112:	84 c0                	test   %al,%al
-  101114:	74 0d                	je     101123 <_ZN4term5writeEPKc+0x1a>
-  101116:	0f be c0             	movsbl %al,%eax
-  101119:	50                   	push   %eax
-  10111a:	e8 7a ff ff ff       	call   101099 <_ZN4term5writeEc>
-  10111f:	58                   	pop    %eax
-  101120:	46                   	inc    %esi
-  101121:	eb ed                	jmp    101110 <_ZN4term5writeEPKc+0x7>
-  101123:	5e                   	pop    %esi
-  101124:	5d                   	pop    %ebp
-  101125:	c3                   	ret    
+001010f8 <term::write(int)>:
+  1010f8:	55                   	push   ebp
+  1010f9:	89 e5                	mov    ebp,esp
+  1010fb:	8a 45 08             	mov    al,BYTE PTR [ebp+0x8]
+  1010fe:	04 30                	add    al,0x30
+  101100:	0f be c0             	movsx  eax,al
+  101103:	50                   	push   eax
+  101104:	e8 5e ff ff ff       	call   101067 <term::write(char)>
+  101109:	58                   	pop    eax
+  10110a:	5d                   	pop    ebp
+  10110b:	c3                   	ret    
 
-00101126 <kernel_main>:
-  101126:	55                   	push   %ebp
-  101127:	89 e5                	mov    %esp,%ebp
-  101129:	53                   	push   %ebx
-  10112a:	57                   	push   %edi
-  10112b:	56                   	push   %esi
-  10112c:	83 e4 f8             	and    $0xfffffff8,%esp
-  10112f:	83 ec 20             	sub    $0x20,%esp
-  101132:	8b 7d 08             	mov    0x8(%ebp),%edi
-  101135:	8b 5d 0c             	mov    0xc(%ebp),%ebx
-  101138:	e8 29 ff ff ff       	call   101066 <_ZN4term5clearEv>
-  10113d:	8d 74 24 08          	lea    0x8(%esp),%esi
-  101141:	56                   	push   %esi
-  101142:	53                   	push   %ebx
-  101143:	e8 e4 00 00 00       	call   10122c <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c>
-  101148:	59                   	pop    %ecx
-  101149:	5a                   	pop    %edx
-  10114a:	68 32 00 10 00       	push   $0x100032
-  10114f:	50                   	push   %eax
-  101150:	68 0c 00 10 00       	push   $0x10000c
-  101155:	e8 9d 00 00 00       	call   1011f7 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_>
-  10115a:	83 c4 0c             	add    $0xc,%esp
-  10115d:	f6 07 01             	testb  $0x1,(%edi)
-  101160:	74 27                	je     101189 <kernel_main+0x63>
-  101162:	8b 47 08             	mov    0x8(%edi),%eax
-  101165:	c1 e8 0a             	shr    $0xa,%eax
-  101168:	25 ff 0f 00 00       	and    $0xfff,%eax
-  10116d:	56                   	push   %esi
-  10116e:	50                   	push   %eax
-  10116f:	e8 1c 01 00 00       	call   101290 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c>
-  101174:	59                   	pop    %ecx
-  101175:	5a                   	pop    %edx
-  101176:	68 34 00 10 00       	push   $0x100034
-  10117b:	50                   	push   %eax
-  10117c:	68 27 00 10 00       	push   $0x100027
-  101181:	e8 71 00 00 00       	call   1011f7 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_>
-  101186:	83 c4 0c             	add    $0xc,%esp
-  101189:	89 e7                	mov    %esp,%edi
-  10118b:	83 27 00             	andl   $0x0,(%edi)
-  10118e:	83 67 04 00          	andl   $0x0,0x4(%edi)
-  101192:	68 08 02 00 00       	push   $0x208
-  101197:	57                   	push   %edi
-  101198:	e8 3d 01 00 00       	call   1012da <_ZN11linked_list4pushEj>
-  10119d:	58                   	pop    %eax
-  10119e:	59                   	pop    %ecx
-  10119f:	8b 47 04             	mov    0x4(%edi),%eax
-  1011a2:	85 c0                	test   %eax,%eax
-  1011a4:	74 04                	je     1011aa <kernel_main+0x84>
-  1011a6:	8b 00                	mov    (%eax),%eax
-  1011a8:	eb 02                	jmp    1011ac <kernel_main+0x86>
-  1011aa:	31 c0                	xor    %eax,%eax
-  1011ac:	56                   	push   %esi
-  1011ad:	50                   	push   %eax
-  1011ae:	e8 dd 00 00 00       	call   101290 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c>
-  1011b3:	59                   	pop    %ecx
-  1011b4:	5a                   	pop    %edx
-  1011b5:	bb 32 00 10 00       	mov    $0x100032,%ebx
-  1011ba:	53                   	push   %ebx
-  1011bb:	50                   	push   %eax
-  1011bc:	e8 62 01 00 00       	call   101323 <_ZN4term5writeIJPKcS2_EEEvDpT_>
-  1011c1:	58                   	pop    %eax
-  1011c2:	59                   	pop    %ecx
-  1011c3:	a1 5a 00 00 00       	mov    0x5a,%eax
-  1011c8:	0f b6 00             	movzbl (%eax),%eax
-  1011cb:	56                   	push   %esi
-  1011cc:	50                   	push   %eax
-  1011cd:	e8 5a 00 00 00       	call   10122c <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c>
-  1011d2:	59                   	pop    %ecx
-  1011d3:	5a                   	pop    %edx
-  1011d4:	53                   	push   %ebx
-  1011d5:	50                   	push   %eax
-  1011d6:	e8 48 01 00 00       	call   101323 <_ZN4term5writeIJPKcS2_EEEvDpT_>
-  1011db:	58                   	pop    %eax
-  1011dc:	59                   	pop    %ecx
-  1011dd:	68 1f 00 10 00       	push   $0x10001f
-  1011e2:	e8 22 ff ff ff       	call   101109 <_ZN4term5writeEPKc>
-  1011e7:	58                   	pop    %eax
-  1011e8:	57                   	push   %edi
-  1011e9:	e8 64 01 00 00       	call   101352 <_ZN11linked_listD2Ev>
-  1011ee:	58                   	pop    %eax
-  1011ef:	8d 65 f4             	lea    -0xc(%ebp),%esp
-  1011f2:	5e                   	pop    %esi
-  1011f3:	5f                   	pop    %edi
-  1011f4:	5b                   	pop    %ebx
-  1011f5:	5d                   	pop    %ebp
-  1011f6:	c3                   	ret    
+0010110c <memset>:
+  10110c:	55                   	push   ebp
+  10110d:	89 e5                	mov    ebp,esp
+  10110f:	56                   	push   esi
+  101110:	8b 4d 10             	mov    ecx,DWORD PTR [ebp+0x10]
+  101113:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  101116:	8a 55 0c             	mov    dl,BYTE PTR [ebp+0xc]
+  101119:	31 f6                	xor    esi,esi
+  10111b:	39 f1                	cmp    ecx,esi
+  10111d:	74 06                	je     101125 <memset+0x19>
+  10111f:	88 14 30             	mov    BYTE PTR [eax+esi*1],dl
+  101122:	46                   	inc    esi
+  101123:	eb f6                	jmp    10111b <memset+0xf>
+  101125:	5e                   	pop    esi
+  101126:	5d                   	pop    ebp
+  101127:	c3                   	ret    
 
-001011f7 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_>:
-  1011f7:	55                   	push   %ebp
-  1011f8:	89 e5                	mov    %esp,%ebp
-  1011fa:	56                   	push   %esi
-  1011fb:	83 ec 0c             	sub    $0xc,%esp
-  1011fe:	8b 45 10             	mov    0x10(%ebp),%eax
-  101201:	8b 4d 0c             	mov    0xc(%ebp),%ecx
-  101204:	8b 55 08             	mov    0x8(%ebp),%edx
-  101207:	89 55 f0             	mov    %edx,-0x10(%ebp)
-  10120a:	89 4d f4             	mov    %ecx,-0xc(%ebp)
-  10120d:	89 45 f8             	mov    %eax,-0x8(%ebp)
-  101210:	6a f4                	push   $0xfffffff4
-  101212:	5e                   	pop    %esi
-  101213:	85 f6                	test   %esi,%esi
-  101215:	74 0f                	je     101226 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_+0x2f>
-  101217:	ff 74 35 fc          	pushl  -0x4(%ebp,%esi,1)
-  10121b:	e8 e9 fe ff ff       	call   101109 <_ZN4term5writeEPKc>
-  101220:	58                   	pop    %eax
-  101221:	83 c6 04             	add    $0x4,%esi
-  101224:	eb ed                	jmp    101213 <_ZN4term5writeIJPKcS2_S2_EEEvDpT_+0x1c>
-  101226:	83 c4 0c             	add    $0xc,%esp
-  101229:	5e                   	pop    %esi
-  10122a:	5d                   	pop    %ebp
-  10122b:	c3                   	ret    
+00101128 <operator new(unsigned int)>:
+  101128:	55                   	push   ebp
+  101129:	89 e5                	mov    ebp,esp
+  10112b:	57                   	push   edi
+  10112c:	56                   	push   esi
+  10112d:	83 e4 f8             	and    esp,0xfffffff8
+  101130:	83 ec 10             	sub    esp,0x10
+  101133:	83 7d 08 10          	cmp    DWORD PTR [ebp+0x8],0x10
+  101137:	73 5b                	jae    101194 <operator new(unsigned int)+0x6c>
+  101139:	b8 e8 03 00 00       	mov    eax,0x3e8
+  10113e:	2b 05 00 40 11 00    	sub    eax,DWORD PTR ds:0x114000
+  101144:	83 f8 02             	cmp    eax,0x2
+  101147:	72 37                	jb     101180 <operator new(unsigned int)+0x58>
+  101149:	89 e6                	mov    esi,esp
+  10114b:	89 f1                	mov    ecx,esi
+  10114d:	e8 c0 06 00 00       	call   101812 <(anonymous namespace)::allocator<16u, 1000u>::find_next_free() const>
+  101152:	80 3e 00             	cmp    BYTE PTR [esi],0x0
+  101155:	74 29                	je     101180 <operator new(unsigned int)+0x58>
+  101157:	8b 35 00 40 11 00    	mov    esi,DWORD PTR ds:0x114000
+  10115d:	c1 e6 04             	shl    esi,0x4
+  101160:	81 c6 00 00 20 00    	add    esi,0x200000
+  101166:	89 e7                	mov    edi,esp
+  101168:	89 f9                	mov    ecx,edi
+  10116a:	e8 a3 06 00 00       	call   101812 <(anonymous namespace)::allocator<16u, 1000u>::find_next_free() const>
+  10116f:	8b 47 04             	mov    eax,DWORD PTR [edi+0x4]
+  101172:	a3 00 40 11 00       	mov    ds:0x114000,eax
+  101177:	89 f0                	mov    eax,esi
+  101179:	8d 65 f8             	lea    esp,[ebp-0x8]
+  10117c:	5e                   	pop    esi
+  10117d:	5f                   	pop    edi
+  10117e:	5d                   	pop    ebp
+  10117f:	c3                   	ret    
+  101180:	68 aa 00 10 00       	push   0x1000aa
+  101185:	68 8d 00 10 00       	push   0x10008d
+  10118a:	68 b1 00 10 00       	push   0x1000b1
+  10118f:	e8 c5 06 00 00       	call   101859 <void term::fatal_error<char const*, char const*, char const*>(char const*, char const*, char const*)>
+  101194:	89 e0                	mov    eax,esp
+  101196:	66 83 60 08 00       	and    WORD PTR [eax+0x8],0x0
+  10119b:	83 60 04 00          	and    DWORD PTR [eax+0x4],0x0
+  10119f:	83 20 00             	and    DWORD PTR [eax],0x0
+  1011a2:	83 60 0c 00          	and    DWORD PTR [eax+0xc],0x0
+  1011a6:	50                   	push   eax
+  1011a7:	6a 10                	push   0x10
+  1011a9:	e8 c2 06 00 00       	call   101870 <char const* int_to_string<10, 10u>(unsigned int, string<10u>&)>
+  1011ae:	59                   	pop    ecx
+  1011af:	5a                   	pop    edx
+  1011b0:	68 c5 00 10 00       	push   0x1000c5
+  1011b5:	50                   	push   eax
+  1011b6:	68 1f 00 10 00       	push   0x10001f
+  1011bb:	e8 99 06 00 00       	call   101859 <void term::fatal_error<char const*, char const*, char const*>(char const*, char const*, char const*)>
 
-0010122c <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c>:
-  10122c:	55                   	push   %ebp
-  10122d:	89 e5                	mov    %esp,%ebp
-  10122f:	53                   	push   %ebx
-  101230:	57                   	push   %edi
-  101231:	56                   	push   %esi
-  101232:	8b 4d 0c             	mov    0xc(%ebp),%ecx
-  101235:	8b 45 08             	mov    0x8(%ebp),%eax
-  101238:	49                   	dec    %ecx
-  101239:	31 ff                	xor    %edi,%edi
-  10123b:	85 c0                	test   %eax,%eax
-  10123d:	74 2b                	je     10126a <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c+0x3e>
-  10123f:	89 c3                	mov    %eax,%ebx
-  101241:	83 e3 0f             	and    $0xf,%ebx
-  101244:	89 da                	mov    %ebx,%edx
-  101246:	80 ca 30             	or     $0x30,%dl
-  101249:	88 c6                	mov    %al,%dh
-  10124b:	80 c6 06             	add    $0x6,%dh
-  10124e:	80 e6 0f             	and    $0xf,%dh
-  101251:	80 c6 41             	add    $0x41,%dh
-  101254:	83 fb 0a             	cmp    $0xa,%ebx
-  101257:	0f b6 f2             	movzbl %dl,%esi
-  10125a:	0f b6 d6             	movzbl %dh,%edx
-  10125d:	0f 42 d6             	cmovb  %esi,%edx
-  101260:	88 51 01             	mov    %dl,0x1(%ecx)
-  101263:	41                   	inc    %ecx
-  101264:	c1 e8 04             	shr    $0x4,%eax
-  101267:	47                   	inc    %edi
-  101268:	eb d1                	jmp    10123b <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c+0xf>
-  10126a:	c6 41 01 00          	movb   $0x0,0x1(%ecx)
-  10126e:	d1 ef                	shr    %edi
-  101270:	8b 75 0c             	mov    0xc(%ebp),%esi
-  101273:	85 ff                	test   %edi,%edi
-  101275:	74 11                	je     101288 <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c+0x5c>
-  101277:	8a 06                	mov    (%esi),%al
-  101279:	32 01                	xor    (%ecx),%al
-  10127b:	88 06                	mov    %al,(%esi)
-  10127d:	32 01                	xor    (%ecx),%al
-  10127f:	88 01                	mov    %al,(%ecx)
-  101281:	30 06                	xor    %al,(%esi)
-  101283:	4f                   	dec    %edi
-  101284:	49                   	dec    %ecx
-  101285:	46                   	inc    %esi
-  101286:	eb eb                	jmp    101273 <_Z13int_to_stringILi16ELj20EEPKcjRAT0__c+0x47>
-  101288:	8b 45 0c             	mov    0xc(%ebp),%eax
-  10128b:	5e                   	pop    %esi
-  10128c:	5f                   	pop    %edi
-  10128d:	5b                   	pop    %ebx
-  10128e:	5d                   	pop    %ebp
-  10128f:	c3                   	ret    
+001011c0 <operator delete(void*)>:
+  1011c0:	55                   	push   ebp
+  1011c1:	89 e5                	mov    ebp,esp
+  1011c3:	53                   	push   ebx
+  1011c4:	56                   	push   esi
+  1011c5:	83 e4 f8             	and    esp,0xfffffff8
+  1011c8:	83 ec 10             	sub    esp,0x10
+  1011cb:	bb 00 00 e0 ff       	mov    ebx,0xffe00000
+  1011d0:	03 5d 08             	add    ebx,DWORD PTR [ebp+0x8]
+  1011d3:	89 e6                	mov    esi,esp
+  1011d5:	53                   	push   ebx
+  1011d6:	68 04 40 11 00       	push   0x114004
+  1011db:	56                   	push   esi
+  1011dc:	e8 4b 0a 00 00       	call   101c2c <mem::bit_sequence<1000u>::bit_member::bit_member(mem::bit_sequence<1000u>&, int)>
+  1011e1:	83 c4 0c             	add    esp,0xc
+  1011e4:	80 7e 08 00          	cmp    BYTE PTR [esi+0x8],0x0
+  1011e8:	74 28                	je     101212 <operator delete(void*)+0x52>
+  1011ea:	89 d8                	mov    eax,ebx
+  1011ec:	c1 e8 03             	shr    eax,0x3
+  1011ef:	80 e3 07             	and    bl,0x7
+  1011f2:	31 d2                	xor    edx,edx
+  1011f4:	42                   	inc    edx
+  1011f5:	89 d9                	mov    ecx,ebx
+  1011f7:	d3 e2                	shl    edx,cl
+  1011f9:	f6 d2                	not    dl
+  1011fb:	20 90 04 40 11 00    	and    BYTE PTR [eax+0x114004],dl
+  101201:	89 e6                	mov    esi,esp
+  101203:	89 f1                	mov    ecx,esi
+  101205:	e8 08 06 00 00       	call   101812 <(anonymous namespace)::allocator<16u, 1000u>::find_next_free() const>
+  10120a:	8b 46 04             	mov    eax,DWORD PTR [esi+0x4]
+  10120d:	a3 00 40 11 00       	mov    ds:0x114000,eax
+  101212:	8d 65 f8             	lea    esp,[ebp-0x8]
+  101215:	5e                   	pop    esi
+  101216:	5b                   	pop    ebx
+  101217:	5d                   	pop    ebp
+  101218:	c3                   	ret    
 
-00101290 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c>:
-  101290:	55                   	push   %ebp
-  101291:	89 e5                	mov    %esp,%ebp
-  101293:	53                   	push   %ebx
-  101294:	57                   	push   %edi
-  101295:	56                   	push   %esi
-  101296:	8b 4d 0c             	mov    0xc(%ebp),%ecx
-  101299:	8b 45 08             	mov    0x8(%ebp),%eax
-  10129c:	8d 71 ff             	lea    -0x1(%ecx),%esi
-  10129f:	31 ff                	xor    %edi,%edi
-  1012a1:	6a 0a                	push   $0xa
-  1012a3:	5b                   	pop    %ebx
-  1012a4:	85 c0                	test   %eax,%eax
-  1012a6:	74 0e                	je     1012b6 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c+0x26>
-  1012a8:	31 d2                	xor    %edx,%edx
-  1012aa:	f7 f3                	div    %ebx
-  1012ac:	80 ca 30             	or     $0x30,%dl
-  1012af:	88 56 01             	mov    %dl,0x1(%esi)
-  1012b2:	46                   	inc    %esi
-  1012b3:	47                   	inc    %edi
-  1012b4:	eb ee                	jmp    1012a4 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c+0x14>
-  1012b6:	c6 46 01 00          	movb   $0x0,0x1(%esi)
-  1012ba:	d1 ef                	shr    %edi
-  1012bc:	89 c8                	mov    %ecx,%eax
-  1012be:	85 ff                	test   %edi,%edi
-  1012c0:	74 11                	je     1012d3 <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c+0x43>
-  1012c2:	8a 10                	mov    (%eax),%dl
-  1012c4:	32 16                	xor    (%esi),%dl
-  1012c6:	88 10                	mov    %dl,(%eax)
-  1012c8:	32 16                	xor    (%esi),%dl
-  1012ca:	88 16                	mov    %dl,(%esi)
-  1012cc:	30 10                	xor    %dl,(%eax)
-  1012ce:	4f                   	dec    %edi
-  1012cf:	4e                   	dec    %esi
-  1012d0:	40                   	inc    %eax
-  1012d1:	eb eb                	jmp    1012be <_Z13int_to_stringILi10ELj20EEPKcjRAT0__c+0x2e>
-  1012d3:	89 c8                	mov    %ecx,%eax
-  1012d5:	5e                   	pop    %esi
-  1012d6:	5f                   	pop    %edi
-  1012d7:	5b                   	pop    %ebx
-  1012d8:	5d                   	pop    %ebp
-  1012d9:	c3                   	ret    
+00101219 <io::send(unsigned short, unsigned char)>:
+  101219:	55                   	push   ebp
+  10121a:	89 e5                	mov    ebp,esp
+  10121c:	0f b7 55 08          	movzx  edx,WORD PTR [ebp+0x8]
+  101220:	8a 45 0c             	mov    al,BYTE PTR [ebp+0xc]
+  101223:	ee                   	out    dx,al
+  101224:	5d                   	pop    ebp
+  101225:	c3                   	ret    
 
-001012da <_ZN11linked_list4pushEj>:
-  1012da:	55                   	push   %ebp
-  1012db:	89 e5                	mov    %esp,%ebp
-  1012dd:	56                   	push   %esi
-  1012de:	8b 45 08             	mov    0x8(%ebp),%eax
-  1012e1:	8b 08                	mov    (%eax),%ecx
-  1012e3:	8b 15 00 30 11 00    	mov    0x113000,%edx
-  1012e9:	89 d6                	mov    %edx,%esi
-  1012eb:	c1 e6 04             	shl    $0x4,%esi
-  1012ee:	42                   	inc    %edx
-  1012ef:	89 15 00 30 11 00    	mov    %edx,0x113000
-  1012f5:	83 a6 04 00 20 00 00 	andl   $0x0,0x200004(%esi)
-  1012fc:	85 c9                	test   %ecx,%ecx
-  1012fe:	8b 4d 0c             	mov    0xc(%ebp),%ecx
-  101301:	89 8e 00 00 20 00    	mov    %ecx,0x200000(%esi)
-  101307:	8d 8e 00 00 20 00    	lea    0x200000(%esi),%ecx
-  10130d:	74 0a                	je     101319 <_ZN11linked_list4pushEj+0x3f>
-  10130f:	6a 04                	push   $0x4
-  101311:	5a                   	pop    %edx
-  101312:	03 50 04             	add    0x4(%eax),%edx
-  101315:	89 d0                	mov    %edx,%eax
-  101317:	eb 05                	jmp    10131e <_ZN11linked_list4pushEj+0x44>
-  101319:	89 08                	mov    %ecx,(%eax)
-  10131b:	83 c0 04             	add    $0x4,%eax
-  10131e:	89 08                	mov    %ecx,(%eax)
-  101320:	5e                   	pop    %esi
-  101321:	5d                   	pop    %ebp
-  101322:	c3                   	ret    
+00101226 <io::receive(unsigned short)>:
+  101226:	55                   	push   ebp
+  101227:	89 e5                	mov    ebp,esp
+  101229:	0f b7 55 08          	movzx  edx,WORD PTR [ebp+0x8]
+  10122d:	ec                   	in     al,dx
+  10122e:	5d                   	pop    ebp
+  10122f:	c3                   	ret    
 
-00101323 <_ZN4term5writeIJPKcS2_EEEvDpT_>:
-  101323:	55                   	push   %ebp
-  101324:	89 e5                	mov    %esp,%ebp
-  101326:	56                   	push   %esi
-  101327:	83 ec 08             	sub    $0x8,%esp
-  10132a:	8b 45 0c             	mov    0xc(%ebp),%eax
-  10132d:	8b 4d 08             	mov    0x8(%ebp),%ecx
-  101330:	89 4d f4             	mov    %ecx,-0xc(%ebp)
-  101333:	89 45 f8             	mov    %eax,-0x8(%ebp)
-  101336:	6a f8                	push   $0xfffffff8
-  101338:	5e                   	pop    %esi
-  101339:	85 f6                	test   %esi,%esi
-  10133b:	74 0f                	je     10134c <_ZN4term5writeIJPKcS2_EEEvDpT_+0x29>
-  10133d:	ff 74 35 fc          	pushl  -0x4(%ebp,%esi,1)
-  101341:	e8 c3 fd ff ff       	call   101109 <_ZN4term5writeEPKc>
-  101346:	58                   	pop    %eax
-  101347:	83 c6 04             	add    $0x4,%esi
-  10134a:	eb ed                	jmp    101339 <_ZN4term5writeIJPKcS2_EEEvDpT_+0x16>
-  10134c:	83 c4 08             	add    $0x8,%esp
-  10134f:	5e                   	pop    %esi
-  101350:	5d                   	pop    %ebp
-  101351:	c3                   	ret    
+00101230 <ps2::read_config()>:
+  101230:	55                   	push   ebp
+  101231:	89 e5                	mov    ebp,esp
+  101233:	66 ba 64 00          	mov    dx,0x64
+  101237:	b0 20                	mov    al,0x20
+  101239:	ee                   	out    dx,al
+  10123a:	66 ba 60 00          	mov    dx,0x60
+  10123e:	ec                   	in     al,dx
+  10123f:	5d                   	pop    ebp
+  101240:	c3                   	ret    
 
-00101352 <_ZN11linked_listD2Ev>:
-  101352:	55                   	push   %ebp
-  101353:	89 e5                	mov    %esp,%ebp
-  101355:	8b 45 08             	mov    0x8(%ebp),%eax
-  101358:	8b 08                	mov    (%eax),%ecx
-  10135a:	8b 50 04             	mov    0x4(%eax),%edx
-  10135d:	39 d1                	cmp    %edx,%ecx
-  10135f:	74 07                	je     101368 <_ZN11linked_listD2Ev+0x16>
-  101361:	8b 49 04             	mov    0x4(%ecx),%ecx
-  101364:	89 08                	mov    %ecx,(%eax)
-  101366:	eb f5                	jmp    10135d <_ZN11linked_listD2Ev+0xb>
-  101368:	5d                   	pop    %ebp
-  101369:	c3                   	ret    
+00101241 <ps2::write_config(unsigned char)>:
+  101241:	55                   	push   ebp
+  101242:	89 e5                	mov    ebp,esp
+  101244:	8a 4d 08             	mov    cl,BYTE PTR [ebp+0x8]
+  101247:	66 ba 64 00          	mov    dx,0x64
+  10124b:	b0 60                	mov    al,0x60
+  10124d:	ee                   	out    dx,al
+  10124e:	66 ba 60 00          	mov    dx,0x60
+  101252:	89 c8                	mov    eax,ecx
+  101254:	ee                   	out    dx,al
+  101255:	5d                   	pop    ebp
+  101256:	c3                   	ret    
+
+00101257 <ps2::status()>:
+  101257:	55                   	push   ebp
+  101258:	89 e5                	mov    ebp,esp
+  10125a:	66 ba 64 00          	mov    dx,0x64
+  10125e:	ec                   	in     al,dx
+  10125f:	5d                   	pop    ebp
+  101260:	c3                   	ret    
+
+00101261 <ps2::has_output_data()>:
+  101261:	55                   	push   ebp
+  101262:	89 e5                	mov    ebp,esp
+  101264:	66 ba 64 00          	mov    dx,0x64
+  101268:	ec                   	in     al,dx
+  101269:	24 01                	and    al,0x1
+  10126b:	5d                   	pop    ebp
+  10126c:	c3                   	ret    
+
+0010126d <ps2::has_input_data()>:
+  10126d:	55                   	push   ebp
+  10126e:	89 e5                	mov    ebp,esp
+  101270:	66 ba 64 00          	mov    dx,0x64
+  101274:	ec                   	in     al,dx
+  101275:	24 02                	and    al,0x2
+  101277:	d0 e8                	shr    al,1
+  101279:	5d                   	pop    ebp
+  10127a:	c3                   	ret    
+
+0010127b <ps2::writing_to_controller()>:
+  10127b:	55                   	push   ebp
+  10127c:	89 e5                	mov    ebp,esp
+  10127e:	66 ba 64 00          	mov    dx,0x64
+  101282:	ec                   	in     al,dx
+  101283:	24 08                	and    al,0x8
+  101285:	c0 e8 03             	shr    al,0x3
+  101288:	5d                   	pop    ebp
+  101289:	c3                   	ret    
+
+0010128a <ps2::got_timeout_error()>:
+  10128a:	55                   	push   ebp
+  10128b:	89 e5                	mov    ebp,esp
+  10128d:	66 ba 64 00          	mov    dx,0x64
+  101291:	ec                   	in     al,dx
+  101292:	c0 e8 07             	shr    al,0x7
+  101295:	5d                   	pop    ebp
+  101296:	c3                   	ret    
+
+00101297 <ps2::got_parity_error()>:
+  101297:	55                   	push   ebp
+  101298:	89 e5                	mov    ebp,esp
+  10129a:	66 ba 64 00          	mov    dx,0x64
+  10129e:	ec                   	in     al,dx
+  10129f:	c0 e8 07             	shr    al,0x7
+  1012a2:	5d                   	pop    ebp
+  1012a3:	c3                   	ret    
+
+001012a4 <ps2::read_output_port()>:
+  1012a4:	55                   	push   ebp
+  1012a5:	89 e5                	mov    ebp,esp
+  1012a7:	66 ba 64 00          	mov    dx,0x64
+  1012ab:	b0 d0                	mov    al,0xd0
+  1012ad:	ee                   	out    dx,al
+  1012ae:	66 ba 60 00          	mov    dx,0x60
+  1012b2:	ec                   	in     al,dx
+  1012b3:	5d                   	pop    ebp
+  1012b4:	c3                   	ret    
+
+001012b5 <ps2::test_controller()>:
+  1012b5:	55                   	push   ebp
+  1012b6:	89 e5                	mov    ebp,esp
+  1012b8:	66 ba 64 00          	mov    dx,0x64
+  1012bc:	b0 aa                	mov    al,0xaa
+  1012be:	ee                   	out    dx,al
+  1012bf:	66 ba 60 00          	mov    dx,0x60
+  1012c3:	ec                   	in     al,dx
+  1012c4:	3c 55                	cmp    al,0x55
+  1012c6:	0f 94 c0             	sete   al
+  1012c9:	5d                   	pop    ebp
+  1012ca:	c3                   	ret    
+
+001012cb <ps2::test_port_1()>:
+  1012cb:	55                   	push   ebp
+  1012cc:	89 e5                	mov    ebp,esp
+  1012ce:	66 ba 64 00          	mov    dx,0x64
+  1012d2:	b0 ab                	mov    al,0xab
+  1012d4:	ee                   	out    dx,al
+  1012d5:	66 ba 60 00          	mov    dx,0x60
+  1012d9:	ec                   	in     al,dx
+  1012da:	84 c0                	test   al,al
+  1012dc:	0f 94 c0             	sete   al
+  1012df:	5d                   	pop    ebp
+  1012e0:	c3                   	ret    
+
+001012e1 <ps2::disable_1()>:
+  1012e1:	55                   	push   ebp
+  1012e2:	89 e5                	mov    ebp,esp
+  1012e4:	66 ba 64 00          	mov    dx,0x64
+  1012e8:	b0 ad                	mov    al,0xad
+  1012ea:	ee                   	out    dx,al
+  1012eb:	5d                   	pop    ebp
+  1012ec:	c3                   	ret    
+
+001012ed <ps2::enable_1()>:
+  1012ed:	55                   	push   ebp
+  1012ee:	89 e5                	mov    ebp,esp
+  1012f0:	66 ba 64 00          	mov    dx,0x64
+  1012f4:	b0 ae                	mov    al,0xae
+  1012f6:	ee                   	out    dx,al
+  1012f7:	5d                   	pop    ebp
+  1012f8:	c3                   	ret    
+
+001012f9 <ps2::disable_2()>:
+  1012f9:	55                   	push   ebp
+  1012fa:	89 e5                	mov    ebp,esp
+  1012fc:	66 ba 64 00          	mov    dx,0x64
+  101300:	b0 a7                	mov    al,0xa7
+  101302:	ee                   	out    dx,al
+  101303:	5d                   	pop    ebp
+  101304:	c3                   	ret    
+
+00101305 <ps2::enable_2()>:
+  101305:	55                   	push   ebp
+  101306:	89 e5                	mov    ebp,esp
+  101308:	66 ba 64 00          	mov    dx,0x64
+  10130c:	b0 a8                	mov    al,0xa8
+  10130e:	ee                   	out    dx,al
+  10130f:	5d                   	pop    ebp
+  101310:	c3                   	ret    
+
+00101311 <ps2::reset_1()>:
+  101311:	55                   	push   ebp
+  101312:	89 e5                	mov    ebp,esp
+  101314:	66 ba 60 00          	mov    dx,0x60
+  101318:	b0 ff                	mov    al,0xff
+  10131a:	ee                   	out    dx,al
+  10131b:	66 ba 60 00          	mov    dx,0x60
+  10131f:	ec                   	in     al,dx
+  101320:	66 ba 60 00          	mov    dx,0x60
+  101324:	ec                   	in     al,dx
+  101325:	3c aa                	cmp    al,0xaa
+  101327:	0f 94 c0             	sete   al
+  10132a:	5d                   	pop    ebp
+  10132b:	c3                   	ret    
+
+0010132c <ps2::reset_2()>:
+  10132c:	55                   	push   ebp
+  10132d:	89 e5                	mov    ebp,esp
+  10132f:	66 ba 64 00          	mov    dx,0x64
+  101333:	b0 d4                	mov    al,0xd4
+  101335:	ee                   	out    dx,al
+  101336:	66 ba 60 00          	mov    dx,0x60
+  10133a:	b0 ff                	mov    al,0xff
+  10133c:	ee                   	out    dx,al
+  10133d:	66 ba 60 00          	mov    dx,0x60
+  101341:	ec                   	in     al,dx
+  101342:	66 ba 60 00          	mov    dx,0x60
+  101346:	ec                   	in     al,dx
+  101347:	3c aa                	cmp    al,0xaa
+  101349:	0f 94 c0             	sete   al
+  10134c:	5d                   	pop    ebp
+  10134d:	c3                   	ret    
+
+0010134e <ps2::hard_reset()>:
+  10134e:	55                   	push   ebp
+  10134f:	89 e5                	mov    ebp,esp
+  101351:	66 ba 64 00          	mov    dx,0x64
+  101355:	b0 fe                	mov    al,0xfe
+  101357:	ee                   	out    dx,al
+  101358:	5d                   	pop    ebp
+  101359:	c3                   	ret    
+
+0010135a <ps2::get_output()>:
+  10135a:	55                   	push   ebp
+  10135b:	89 e5                	mov    ebp,esp
+  10135d:	66 ba 60 00          	mov    dx,0x60
+  101361:	ec                   	in     al,dx
+  101362:	5d                   	pop    ebp
+  101363:	c3                   	ret    
+
+00101364 <ps2::flush_output()>:
+  101364:	55                   	push   ebp
+  101365:	89 e5                	mov    ebp,esp
+  101367:	66 ba 64 00          	mov    dx,0x64
+  10136b:	ec                   	in     al,dx
+  10136c:	a8 01                	test   al,0x1
+  10136e:	74 07                	je     101377 <ps2::flush_output()+0x13>
+  101370:	66 ba 60 00          	mov    dx,0x60
+  101374:	ec                   	in     al,dx
+  101375:	eb f0                	jmp    101367 <ps2::flush_output()+0x3>
+  101377:	5d                   	pop    ebp
+  101378:	c3                   	ret    
+
+00101379 <ps2::startup(int)>:
+  101379:	55                   	push   ebp
+  10137a:	89 e5                	mov    ebp,esp
+  10137c:	66 ba 64 00          	mov    dx,0x64
+  101380:	b0 ad                	mov    al,0xad
+  101382:	ee                   	out    dx,al
+  101383:	66 ba 64 00          	mov    dx,0x64
+  101387:	b0 a7                	mov    al,0xa7
+  101389:	ee                   	out    dx,al
+  10138a:	e8 d5 ff ff ff       	call   101364 <ps2::flush_output()>
+  10138f:	66 ba 64 00          	mov    dx,0x64
+  101393:	b0 20                	mov    al,0x20
+  101395:	ee                   	out    dx,al
+  101396:	66 ba 60 00          	mov    dx,0x60
+  10139a:	ec                   	in     al,dx
+  10139b:	89 c1                	mov    ecx,eax
+  10139d:	80 e1 bc             	and    cl,0xbc
+  1013a0:	66 ba 64 00          	mov    dx,0x64
+  1013a4:	b0 60                	mov    al,0x60
+  1013a6:	ee                   	out    dx,al
+  1013a7:	66 ba 60 00          	mov    dx,0x60
+  1013ab:	89 c8                	mov    eax,ecx
+  1013ad:	ee                   	out    dx,al
+  1013ae:	66 ba 64 00          	mov    dx,0x64
+  1013b2:	b0 aa                	mov    al,0xaa
+  1013b4:	ee                   	out    dx,al
+  1013b5:	66 ba 60 00          	mov    dx,0x60
+  1013b9:	ec                   	in     al,dx
+  1013ba:	3c 55                	cmp    al,0x55
+  1013bc:	75 3a                	jne    1013f8 <ps2::startup(int)+0x7f>
+  1013be:	66 ba 64 00          	mov    dx,0x64
+  1013c2:	b0 ab                	mov    al,0xab
+  1013c4:	ee                   	out    dx,al
+  1013c5:	66 ba 60 00          	mov    dx,0x60
+  1013c9:	ec                   	in     al,dx
+  1013ca:	84 c0                	test   al,al
+  1013cc:	75 2a                	jne    1013f8 <ps2::startup(int)+0x7f>
+  1013ce:	66 ba 64 00          	mov    dx,0x64
+  1013d2:	b0 ae                	mov    al,0xae
+  1013d4:	ee                   	out    dx,al
+  1013d5:	e8 37 ff ff ff       	call   101311 <ps2::reset_1()>
+  1013da:	84 c0                	test   al,al
+  1013dc:	74 1a                	je     1013f8 <ps2::startup(int)+0x7f>
+  1013de:	83 7d 08 02          	cmp    DWORD PTR [ebp+0x8],0x2
+  1013e2:	75 10                	jne    1013f4 <ps2::startup(int)+0x7b>
+  1013e4:	66 ba 64 00          	mov    dx,0x64
+  1013e8:	b0 a8                	mov    al,0xa8
+  1013ea:	ee                   	out    dx,al
+  1013eb:	e8 3c ff ff ff       	call   10132c <ps2::reset_2()>
+  1013f0:	84 c0                	test   al,al
+  1013f2:	74 04                	je     1013f8 <ps2::startup(int)+0x7f>
+  1013f4:	b0 01                	mov    al,0x1
+  1013f6:	eb 02                	jmp    1013fa <ps2::startup(int)+0x81>
+  1013f8:	31 c0                	xor    eax,eax
+  1013fa:	5d                   	pop    ebp
+  1013fb:	c3                   	ret    
+
+001013fc <kbd::get_ascii()>:
+  1013fc:	55                   	push   ebp
+  1013fd:	89 e5                	mov    ebp,esp
+  1013ff:	66 ba 60 00          	mov    dx,0x60
+  101403:	ec                   	in     al,dx
+  101404:	8b 4d 08             	mov    ecx,DWORD PTR [ebp+0x8]
+  101407:	89 c2                	mov    edx,eax
+  101409:	80 c2 f3             	add    dl,0xf3
+  10140c:	80 fa 59             	cmp    dl,0x59
+  10140f:	77 14                	ja     101425 <kbd::get_ascii()+0x29>
+  101411:	0f b6 c2             	movzx  eax,dl
+  101414:	ff 24 85 00 20 10 00 	jmp    DWORD PTR [eax*4+0x102000]
+  10141b:	66 c7 01 01 09       	mov    WORD PTR [ecx],0x901
+  101420:	e9 b5 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101425:	3c f0                	cmp    al,0xf0
+  101427:	75 19                	jne    101442 <kbd::get_ascii()+0x46>
+  101429:	66 ba 60 00          	mov    dx,0x60
+  10142d:	ec                   	in     al,dx
+  10142e:	3c 14                	cmp    al,0x14
+  101430:	75 10                	jne    101442 <kbd::get_ascii()+0x46>
+  101432:	c6 05 dc 40 11 00 00 	mov    BYTE PTR ds:0x1140dc,0x0
+  101439:	eb 07                	jmp    101442 <kbd::get_ascii()+0x46>
+  10143b:	c6 05 dc 40 11 00 01 	mov    BYTE PTR ds:0x1140dc,0x1
+  101442:	83 61 04 00          	and    DWORD PTR [ecx+0x4],0x0
+  101446:	83 21 00             	and    DWORD PTR [ecx],0x0
+  101449:	e9 8c 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  10144e:	66 c7 01 01 71       	mov    WORD PTR [ecx],0x7101
+  101453:	e9 82 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101458:	66 c7 01 01 31       	mov    WORD PTR [ecx],0x3101
+  10145d:	e9 78 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101462:	66 c7 01 01 7a       	mov    WORD PTR [ecx],0x7a01
+  101467:	e9 6e 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  10146c:	66 c7 01 01 73       	mov    WORD PTR [ecx],0x7301
+  101471:	e9 64 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101476:	66 c7 01 01 61       	mov    WORD PTR [ecx],0x6101
+  10147b:	e9 5a 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101480:	66 c7 01 01 77       	mov    WORD PTR [ecx],0x7701
+  101485:	e9 50 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  10148a:	66 c7 01 01 32       	mov    WORD PTR [ecx],0x3201
+  10148f:	e9 46 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101494:	a0 dc 40 11 00       	mov    al,ds:0x1140dc
+  101499:	b2 01                	mov    dl,0x1
+  10149b:	88 11                	mov    BYTE PTR [ecx],dl
+  10149d:	38 d0                	cmp    al,dl
+  10149f:	0f 85 31 01 00 00    	jne    1015d6 <kbd::get_ascii()+0x1da>
+  1014a5:	c6 41 01 03          	mov    BYTE PTR [ecx+0x1],0x3
+  1014a9:	e9 2c 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014ae:	66 c7 01 01 78       	mov    WORD PTR [ecx],0x7801
+  1014b3:	e9 22 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014b8:	66 c7 01 01 64       	mov    WORD PTR [ecx],0x6401
+  1014bd:	e9 18 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014c2:	66 c7 01 01 65       	mov    WORD PTR [ecx],0x6501
+  1014c7:	e9 0e 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014cc:	66 c7 01 01 34       	mov    WORD PTR [ecx],0x3401
+  1014d1:	e9 04 01 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014d6:	66 c7 01 01 33       	mov    WORD PTR [ecx],0x3301
+  1014db:	e9 fa 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014e0:	66 c7 01 01 20       	mov    WORD PTR [ecx],0x2001
+  1014e5:	e9 f0 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014ea:	66 c7 01 01 76       	mov    WORD PTR [ecx],0x7601
+  1014ef:	e9 e6 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014f4:	66 c7 01 01 66       	mov    WORD PTR [ecx],0x6601
+  1014f9:	e9 dc 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  1014fe:	66 c7 01 01 74       	mov    WORD PTR [ecx],0x7401
+  101503:	e9 d2 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101508:	66 c7 01 01 72       	mov    WORD PTR [ecx],0x7201
+  10150d:	e9 c8 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101512:	66 c7 01 01 35       	mov    WORD PTR [ecx],0x3501
+  101517:	e9 be 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  10151c:	66 c7 01 01 6e       	mov    WORD PTR [ecx],0x6e01
+  101521:	e9 b4 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101526:	66 c7 01 01 62       	mov    WORD PTR [ecx],0x6201
+  10152b:	e9 aa 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101530:	66 c7 01 01 68       	mov    WORD PTR [ecx],0x6801
+  101535:	e9 a0 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  10153a:	66 c7 01 01 67       	mov    WORD PTR [ecx],0x6701
+  10153f:	e9 96 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101544:	66 c7 01 01 79       	mov    WORD PTR [ecx],0x7901
+  101549:	e9 8c 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  10154e:	66 c7 01 01 36       	mov    WORD PTR [ecx],0x3601
+  101553:	e9 82 00 00 00       	jmp    1015da <kbd::get_ascii()+0x1de>
+  101558:	66 c7 01 01 6d       	mov    WORD PTR [ecx],0x6d01
+  10155d:	eb 7b                	jmp    1015da <kbd::get_ascii()+0x1de>
+  10155f:	66 c7 01 01 6a       	mov    WORD PTR [ecx],0x6a01
+  101564:	eb 74                	jmp    1015da <kbd::get_ascii()+0x1de>
+  101566:	66 c7 01 01 75       	mov    WORD PTR [ecx],0x7501
+  10156b:	eb 6d                	jmp    1015da <kbd::get_ascii()+0x1de>
+  10156d:	66 c7 01 01 37       	mov    WORD PTR [ecx],0x3701
+  101572:	eb 66                	jmp    1015da <kbd::get_ascii()+0x1de>
+  101574:	66 c7 01 01 38       	mov    WORD PTR [ecx],0x3801
+  101579:	eb 5f                	jmp    1015da <kbd::get_ascii()+0x1de>
+  10157b:	66 c7 01 01 6b       	mov    WORD PTR [ecx],0x6b01
+  101580:	eb 58                	jmp    1015da <kbd::get_ascii()+0x1de>
+  101582:	66 c7 01 01 69       	mov    WORD PTR [ecx],0x6901
+  101587:	eb 51                	jmp    1015da <kbd::get_ascii()+0x1de>
+  101589:	66 c7 01 01 6f       	mov    WORD PTR [ecx],0x6f01
+  10158e:	eb 4a                	jmp    1015da <kbd::get_ascii()+0x1de>
+  101590:	66 c7 01 01 30       	mov    WORD PTR [ecx],0x3001
+  101595:	eb 43                	jmp    1015da <kbd::get_ascii()+0x1de>
+  101597:	66 c7 01 01 39       	mov    WORD PTR [ecx],0x3901
+  10159c:	eb 3c                	jmp    1015da <kbd::get_ascii()+0x1de>
+  10159e:	66 c7 01 01 2e       	mov    WORD PTR [ecx],0x2e01
+  1015a3:	eb 35                	jmp    1015da <kbd::get_ascii()+0x1de>
+  1015a5:	66 c7 01 01 2f       	mov    WORD PTR [ecx],0x2f01
+  1015aa:	eb 2e                	jmp    1015da <kbd::get_ascii()+0x1de>
+  1015ac:	66 c7 01 01 6c       	mov    WORD PTR [ecx],0x6c01
+  1015b1:	eb 27                	jmp    1015da <kbd::get_ascii()+0x1de>
+  1015b3:	66 c7 01 01 70       	mov    WORD PTR [ecx],0x7001
+  1015b8:	eb 20                	jmp    1015da <kbd::get_ascii()+0x1de>
+  1015ba:	66 c7 01 01 2d       	mov    WORD PTR [ecx],0x2d01
+  1015bf:	eb 19                	jmp    1015da <kbd::get_ascii()+0x1de>
+  1015c1:	66 c7 01 01 3d       	mov    WORD PTR [ecx],0x3d01
+  1015c6:	eb 12                	jmp    1015da <kbd::get_ascii()+0x1de>
+  1015c8:	66 c7 01 01 0a       	mov    WORD PTR [ecx],0xa01
+  1015cd:	eb 0b                	jmp    1015da <kbd::get_ascii()+0x1de>
+  1015cf:	66 c7 01 01 08       	mov    WORD PTR [ecx],0x801
+  1015d4:	eb 04                	jmp    1015da <kbd::get_ascii()+0x1de>
+  1015d6:	c6 41 01 63          	mov    BYTE PTR [ecx+0x1],0x63
+  1015da:	c7 41 04 79 00 10 00 	mov    DWORD PTR [ecx+0x4],0x100079
+  1015e1:	89 c8                	mov    eax,ecx
+  1015e3:	5d                   	pop    ebp
+  1015e4:	c2 04 00             	ret    0x4
+
+001015e7 <kbd::get_line(bool)>:
+  1015e7:	55                   	push   ebp
+  1015e8:	89 e5                	mov    ebp,esp
+  1015ea:	53                   	push   ebx
+  1015eb:	57                   	push   edi
+  1015ec:	56                   	push   esi
+  1015ed:	83 e4 f8             	and    esp,0xfffffff8
+  1015f0:	83 ec 10             	sub    esp,0x10
+  1015f3:	8a 5d 08             	mov    bl,BYTE PTR [ebp+0x8]
+  1015f6:	31 f6                	xor    esi,esi
+  1015f8:	89 e7                	mov    edi,esp
+  1015fa:	83 fe 4e             	cmp    esi,0x4e
+  1015fd:	7f 59                	jg     101658 <kbd::get_line(bool)+0x71>
+  1015ff:	66 ba 64 00          	mov    dx,0x64
+  101603:	ec                   	in     al,dx
+  101604:	a8 01                	test   al,0x1
+  101606:	74 f7                	je     1015ff <kbd::get_line(bool)+0x18>
+  101608:	57                   	push   edi
+  101609:	e8 ee fd ff ff       	call   1013fc <kbd::get_ascii()>
+  10160e:	80 3c 24 00          	cmp    BYTE PTR [esp],0x0
+  101612:	74 e6                	je     1015fa <kbd::get_line(bool)+0x13>
+  101614:	8a 7c 24 01          	mov    bh,BYTE PTR [esp+0x1]
+  101618:	80 ff 08             	cmp    bh,0x8
+  10161b:	75 1a                	jne    101637 <kbd::get_line(bool)+0x50>
+  10161d:	4e                   	dec    esi
+  10161e:	ff 0d e0 40 11 00    	dec    DWORD PTR ds:0x1140e0
+  101624:	68 41 00 10 00       	push   0x100041
+  101629:	e8 ad fa ff ff       	call   1010db <term::write(char const*)>
+  10162e:	58                   	pop    eax
+  10162f:	ff 0d e0 40 11 00    	dec    DWORD PTR ds:0x1140e0
+  101635:	eb c3                	jmp    1015fa <kbd::get_line(bool)+0x13>
+  101637:	84 db                	test   bl,bl
+  101639:	74 0a                	je     101645 <kbd::get_line(bool)+0x5e>
+  10163b:	0f be c7             	movsx  eax,bh
+  10163e:	50                   	push   eax
+  10163f:	e8 23 fa ff ff       	call   101067 <term::write(char)>
+  101644:	58                   	pop    eax
+  101645:	80 ff 03             	cmp    bh,0x3
+  101648:	74 22                	je     10166c <kbd::get_line(bool)+0x85>
+  10164a:	80 ff 0a             	cmp    bh,0xa
+  10164d:	74 09                	je     101658 <kbd::get_line(bool)+0x71>
+  10164f:	88 be 88 40 11 00    	mov    BYTE PTR [esi+0x114088],bh
+  101655:	46                   	inc    esi
+  101656:	eb a2                	jmp    1015fa <kbd::get_line(bool)+0x13>
+  101658:	c6 86 88 40 11 00 00 	mov    BYTE PTR [esi+0x114088],0x0
+  10165f:	b8 88 40 11 00       	mov    eax,0x114088
+  101664:	8d 65 f4             	lea    esp,[ebp-0xc]
+  101667:	5e                   	pop    esi
+  101668:	5f                   	pop    edi
+  101669:	5b                   	pop    ebx
+  10166a:	5d                   	pop    ebp
+  10166b:	c3                   	ret    
+  10166c:	6a 0a                	push   0xa
+  10166e:	e8 f4 f9 ff ff       	call   101067 <term::write(char)>
+  101673:	58                   	pop    eax
+  101674:	c6 05 88 40 11 00 00 	mov    BYTE PTR ds:0x114088,0x0
+  10167b:	eb e2                	jmp    10165f <kbd::get_line(bool)+0x78>
+
+0010167d <time::delay(int)>:
+  10167d:	55                   	push   ebp
+  10167e:	89 e5                	mov    ebp,esp
+  101680:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  101683:	c1 e0 10             	shl    eax,0x10
+  101686:	31 c9                	xor    ecx,ecx
+  101688:	39 c1                	cmp    ecx,eax
+  10168a:	7d 07                	jge    101693 <time::delay(int)+0x16>
+  10168c:	21 c0                	and    eax,eax
+  10168e:	21 c9                	and    ecx,ecx
+  101690:	41                   	inc    ecx
+  101691:	eb f5                	jmp    101688 <time::delay(int)+0xb>
+  101693:	5d                   	pop    ebp
+  101694:	c3                   	ret    
+
+00101695 <kernel_main>:
+  101695:	55                   	push   ebp
+  101696:	89 e5                	mov    ebp,esp
+  101698:	53                   	push   ebx
+  101699:	57                   	push   edi
+  10169a:	56                   	push   esi
+  10169b:	83 e4 f8             	and    esp,0xfffffff8
+  10169e:	81 ec e8 09 00 00    	sub    esp,0x9e8
+  1016a4:	8b 7d 08             	mov    edi,DWORD PTR [ebp+0x8]
+  1016a7:	8b 5d 0c             	mov    ebx,DWORD PTR [ebp+0xc]
+  1016aa:	e8 85 f9 ff ff       	call   101034 <term::clear()>
+  1016af:	89 e6                	mov    esi,esp
+  1016b1:	83 66 14 00          	and    DWORD PTR [esi+0x14],0x0
+  1016b5:	83 66 10 00          	and    DWORD PTR [esi+0x10],0x0
+  1016b9:	83 66 0c 00          	and    DWORD PTR [esi+0xc],0x0
+  1016bd:	83 66 08 00          	and    DWORD PTR [esi+0x8],0x0
+  1016c1:	83 66 04 00          	and    DWORD PTR [esi+0x4],0x0
+  1016c5:	83 26 00             	and    DWORD PTR [esi],0x0
+  1016c8:	56                   	push   esi
+  1016c9:	53                   	push   ebx
+  1016ca:	e8 20 02 00 00       	call   1018ef <char const* int_to_string<16, 20u>(unsigned int, string<20u>&)>
+  1016cf:	59                   	pop    ecx
+  1016d0:	5a                   	pop    edx
+  1016d1:	68 aa 00 10 00       	push   0x1000aa
+  1016d6:	50                   	push   eax
+  1016d7:	68 0c 00 10 00       	push   0x10000c
+  1016dc:	e8 d9 01 00 00       	call   1018ba <void term::write<char const*, char const*, char const*>(char const*, char const*, char const*)>
+  1016e1:	83 c4 0c             	add    esp,0xc
+  1016e4:	f6 07 01             	test   BYTE PTR [edi],0x1
+  1016e7:	74 27                	je     101710 <kernel_main+0x7b>
+  1016e9:	8b 47 08             	mov    eax,DWORD PTR [edi+0x8]
+  1016ec:	c1 e8 0a             	shr    eax,0xa
+  1016ef:	25 ff 0f 00 00       	and    eax,0xfff
+  1016f4:	56                   	push   esi
+  1016f5:	50                   	push   eax
+  1016f6:	e8 58 02 00 00       	call   101953 <char const* int_to_string<10, 20u>(unsigned int, string<20u>&)>
+  1016fb:	59                   	pop    ecx
+  1016fc:	5a                   	pop    edx
+  1016fd:	68 ac 00 10 00       	push   0x1000ac
+  101702:	50                   	push   eax
+  101703:	68 6a 00 10 00       	push   0x10006a
+  101708:	e8 ad 01 00 00       	call   1018ba <void term::write<char const*, char const*, char const*>(char const*, char const*, char const*)>
+  10170d:	83 c4 0c             	add    esp,0xc
+  101710:	68 3a 00 10 00       	push   0x10003a
+  101715:	e8 c1 f9 ff ff       	call   1010db <term::write(char const*)>
+  10171a:	58                   	pop    eax
+  10171b:	6a 01                	push   0x1
+  10171d:	e8 57 fc ff ff       	call   101379 <ps2::startup(int)>
+  101722:	59                   	pop    ecx
+  101723:	84 c0                	test   al,al
+  101725:	0f 84 dc 00 00 00    	je     101807 <kernel_main+0x172>
+  10172b:	68 75 00 10 00       	push   0x100075
+  101730:	e8 a6 f9 ff ff       	call   1010db <term::write(char const*)>
+  101735:	58                   	pop    eax
+  101736:	8d 74 24 18          	lea    esi,[esp+0x18]
+  10173a:	6a 3c                	push   0x3c
+  10173c:	5f                   	pop    edi
+  10173d:	68 89 00 10 00       	push   0x100089
+  101742:	e8 94 f9 ff ff       	call   1010db <term::write(char const*)>
+  101747:	58                   	pop    eax
+  101748:	6a 01                	push   0x1
+  10174a:	e8 98 fe ff ff       	call   1015e7 <kbd::get_line(bool)>
+  10174f:	59                   	pop    ecx
+  101750:	68 60 00 10 00       	push   0x100060
+  101755:	68 88 40 11 00       	push   0x114088
+  10175a:	e8 4d 02 00 00       	call   1019ac <string<80u>::operator==(char const*) const>
+  10175f:	59                   	pop    ecx
+  101760:	5a                   	pop    edx
+  101761:	84 c0                	test   al,al
+  101763:	0f 85 9b 00 00 00    	jne    101804 <kernel_main+0x16f>
+  101769:	68 a4 00 10 00       	push   0x1000a4
+  10176e:	68 88 40 11 00       	push   0x114088
+  101773:	e8 34 02 00 00       	call   1019ac <string<80u>::operator==(char const*) const>
+  101778:	59                   	pop    ecx
+  101779:	5a                   	pop    edx
+  10177a:	84 c0                	test   al,al
+  10177c:	74 05                	je     101783 <kernel_main+0xee>
+  10177e:	e8 b1 f8 ff ff       	call   101034 <term::clear()>
+  101783:	68 65 00 10 00       	push   0x100065
+  101788:	68 88 40 11 00       	push   0x114088
+  10178d:	e8 1a 02 00 00       	call   1019ac <string<80u>::operator==(char const*) const>
+  101792:	59                   	pop    ecx
+  101793:	5a                   	pop    edx
+  101794:	84 c0                	test   al,al
+  101796:	74 11                	je     1017a9 <kernel_main+0x114>
+  101798:	56                   	push   esi
+  101799:	e8 3a 02 00 00       	call   1019d8 <game_of_life::game_of_life()>
+  10179e:	58                   	pop    eax
+  10179f:	6a 0a                	push   0xa
+  1017a1:	56                   	push   esi
+  1017a2:	e8 e7 02 00 00       	call   101a8e <game_of_life::run(int)>
+  1017a7:	58                   	pop    eax
+  1017a8:	59                   	pop    ecx
+  1017a9:	68 59 00 10 00       	push   0x100059
+  1017ae:	68 88 40 11 00       	push   0x114088
+  1017b3:	e8 f4 01 00 00       	call   1019ac <string<80u>::operator==(char const*) const>
+  1017b8:	59                   	pop    ecx
+  1017b9:	5a                   	pop    edx
+  1017ba:	84 c0                	test   al,al
+  1017bc:	0f 84 7b ff ff ff    	je     10173d <kernel_main+0xa8>
+  1017c2:	68 71 15 00 00       	push   0x1571
+  1017c7:	56                   	push   esi
+  1017c8:	e8 e1 02 00 00       	call   101aae <rand::random_gen::random_gen(unsigned int)>
+  1017cd:	58                   	pop    eax
+  1017ce:	59                   	pop    ecx
+  1017cf:	e8 60 f8 ff ff       	call   101034 <term::clear()>
+  1017d4:	bb d0 07 00 00       	mov    ebx,0x7d0
+  1017d9:	85 db                	test   ebx,ebx
+  1017db:	0f 84 5c ff ff ff    	je     10173d <kernel_main+0xa8>
+  1017e1:	56                   	push   esi
+  1017e2:	e8 25 03 00 00       	call   101b0c <rand::random_gen::next()>
+  1017e7:	59                   	pop    ecx
+  1017e8:	31 d2                	xor    edx,edx
+  1017ea:	f7 f7                	div    edi
+  1017ec:	80 c2 24             	add    dl,0x24
+  1017ef:	0f b6 c2             	movzx  eax,dl
+  1017f2:	50                   	push   eax
+  1017f3:	e8 6f f8 ff ff       	call   101067 <term::write(char)>
+  1017f8:	58                   	pop    eax
+  1017f9:	6a 0a                	push   0xa
+  1017fb:	e8 7d fe ff ff       	call   10167d <time::delay(int)>
+  101800:	58                   	pop    eax
+  101801:	4b                   	dec    ebx
+  101802:	eb d5                	jmp    1017d9 <kernel_main+0x144>
+  101804:	f4                   	hlt    
+  101805:	eb fe                	jmp    101805 <kernel_main+0x170>
+  101807:	68 43 00 10 00       	push   0x100043
+  10180c:	e8 8c 01 00 00       	call   10199d <void term::fatal_error<char const*>(char const*)>
+  101811:	90                   	nop
+
+00101812 <(anonymous namespace)::allocator<16u, 1000u>::find_next_free() const>:
+  101812:	55                   	push   ebp
+  101813:	89 e5                	mov    ebp,esp
+  101815:	53                   	push   ebx
+  101816:	56                   	push   esi
+  101817:	89 c8                	mov    eax,ecx
+  101819:	31 c9                	xor    ecx,ecx
+  10181b:	81 f9 e8 03 00 00    	cmp    ecx,0x3e8
+  101821:	74 1c                	je     10183f <(anonymous namespace)::allocator<16u, 1000u>::find_next_free() const+0x2d>
+  101823:	89 ca                	mov    edx,ecx
+  101825:	c1 ea 03             	shr    edx,0x3
+  101828:	0f b6 92 04 40 11 00 	movzx  edx,BYTE PTR [edx+0x114004]
+  10182f:	89 cb                	mov    ebx,ecx
+  101831:	80 e3 07             	and    bl,0x7
+  101834:	0f b6 f3             	movzx  esi,bl
+  101837:	0f a3 f2             	bt     edx,esi
+  10183a:	73 0c                	jae    101848 <(anonymous namespace)::allocator<16u, 1000u>::find_next_free() const+0x36>
+  10183c:	41                   	inc    ecx
+  10183d:	eb dc                	jmp    10181b <(anonymous namespace)::allocator<16u, 1000u>::find_next_free() const+0x9>
+  10183f:	83 60 04 00          	and    DWORD PTR [eax+0x4],0x0
+  101843:	83 20 00             	and    DWORD PTR [eax],0x0
+  101846:	eb 06                	jmp    10184e <(anonymous namespace)::allocator<16u, 1000u>::find_next_free() const+0x3c>
+  101848:	c6 00 01             	mov    BYTE PTR [eax],0x1
+  10184b:	89 48 04             	mov    DWORD PTR [eax+0x4],ecx
+  10184e:	c7 40 08 79 00 10 00 	mov    DWORD PTR [eax+0x8],0x100079
+  101855:	5e                   	pop    esi
+  101856:	5b                   	pop    ebx
+  101857:	5d                   	pop    ebp
+  101858:	c3                   	ret    
+
+00101859 <void term::fatal_error<char const*, char const*, char const*>(char const*, char const*, char const*)>:
+  101859:	55                   	push   ebp
+  10185a:	89 e5                	mov    ebp,esp
+  10185c:	ff 75 10             	push   DWORD PTR [ebp+0x10]
+  10185f:	ff 75 0c             	push   DWORD PTR [ebp+0xc]
+  101862:	ff 75 08             	push   DWORD PTR [ebp+0x8]
+  101865:	e8 50 00 00 00       	call   1018ba <void term::write<char const*, char const*, char const*>(char const*, char const*, char const*)>
+  10186a:	83 c4 0c             	add    esp,0xc
+  10186d:	f4                   	hlt    
+  10186e:	eb fe                	jmp    10186e <void term::fatal_error<char const*, char const*, char const*>(char const*, char const*, char const*)+0x15>
+
+00101870 <char const* int_to_string<10, 10u>(unsigned int, string<10u>&)>:
+  101870:	55                   	push   ebp
+  101871:	89 e5                	mov    ebp,esp
+  101873:	53                   	push   ebx
+  101874:	57                   	push   edi
+  101875:	56                   	push   esi
+  101876:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  101879:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  10187c:	8d 71 ff             	lea    esi,[ecx-0x1]
+  10187f:	31 ff                	xor    edi,edi
+  101881:	6a 0a                	push   0xa
+  101883:	5b                   	pop    ebx
+  101884:	85 c0                	test   eax,eax
+  101886:	74 0e                	je     101896 <char const* int_to_string<10, 10u>(unsigned int, string<10u>&)+0x26>
+  101888:	31 d2                	xor    edx,edx
+  10188a:	f7 f3                	div    ebx
+  10188c:	80 ca 30             	or     dl,0x30
+  10188f:	88 56 01             	mov    BYTE PTR [esi+0x1],dl
+  101892:	46                   	inc    esi
+  101893:	47                   	inc    edi
+  101894:	eb ee                	jmp    101884 <char const* int_to_string<10, 10u>(unsigned int, string<10u>&)+0x14>
+  101896:	c6 46 01 00          	mov    BYTE PTR [esi+0x1],0x0
+  10189a:	d1 ef                	shr    edi,1
+  10189c:	89 c8                	mov    eax,ecx
+  10189e:	85 ff                	test   edi,edi
+  1018a0:	74 11                	je     1018b3 <char const* int_to_string<10, 10u>(unsigned int, string<10u>&)+0x43>
+  1018a2:	8a 10                	mov    dl,BYTE PTR [eax]
+  1018a4:	32 16                	xor    dl,BYTE PTR [esi]
+  1018a6:	88 10                	mov    BYTE PTR [eax],dl
+  1018a8:	32 16                	xor    dl,BYTE PTR [esi]
+  1018aa:	88 16                	mov    BYTE PTR [esi],dl
+  1018ac:	30 10                	xor    BYTE PTR [eax],dl
+  1018ae:	4f                   	dec    edi
+  1018af:	40                   	inc    eax
+  1018b0:	4e                   	dec    esi
+  1018b1:	eb eb                	jmp    10189e <char const* int_to_string<10, 10u>(unsigned int, string<10u>&)+0x2e>
+  1018b3:	89 c8                	mov    eax,ecx
+  1018b5:	5e                   	pop    esi
+  1018b6:	5f                   	pop    edi
+  1018b7:	5b                   	pop    ebx
+  1018b8:	5d                   	pop    ebp
+  1018b9:	c3                   	ret    
+
+001018ba <void term::write<char const*, char const*, char const*>(char const*, char const*, char const*)>:
+  1018ba:	55                   	push   ebp
+  1018bb:	89 e5                	mov    ebp,esp
+  1018bd:	56                   	push   esi
+  1018be:	83 ec 0c             	sub    esp,0xc
+  1018c1:	8b 45 10             	mov    eax,DWORD PTR [ebp+0x10]
+  1018c4:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  1018c7:	8b 55 08             	mov    edx,DWORD PTR [ebp+0x8]
+  1018ca:	89 55 f0             	mov    DWORD PTR [ebp-0x10],edx
+  1018cd:	89 4d f4             	mov    DWORD PTR [ebp-0xc],ecx
+  1018d0:	89 45 f8             	mov    DWORD PTR [ebp-0x8],eax
+  1018d3:	6a f4                	push   0xfffffff4
+  1018d5:	5e                   	pop    esi
+  1018d6:	85 f6                	test   esi,esi
+  1018d8:	74 0f                	je     1018e9 <void term::write<char const*, char const*, char const*>(char const*, char const*, char const*)+0x2f>
+  1018da:	ff 74 35 fc          	push   DWORD PTR [ebp+esi*1-0x4]
+  1018de:	e8 f8 f7 ff ff       	call   1010db <term::write(char const*)>
+  1018e3:	58                   	pop    eax
+  1018e4:	83 c6 04             	add    esi,0x4
+  1018e7:	eb ed                	jmp    1018d6 <void term::write<char const*, char const*, char const*>(char const*, char const*, char const*)+0x1c>
+  1018e9:	83 c4 0c             	add    esp,0xc
+  1018ec:	5e                   	pop    esi
+  1018ed:	5d                   	pop    ebp
+  1018ee:	c3                   	ret    
+
+001018ef <char const* int_to_string<16, 20u>(unsigned int, string<20u>&)>:
+  1018ef:	55                   	push   ebp
+  1018f0:	89 e5                	mov    ebp,esp
+  1018f2:	53                   	push   ebx
+  1018f3:	57                   	push   edi
+  1018f4:	56                   	push   esi
+  1018f5:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  1018f8:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  1018fb:	49                   	dec    ecx
+  1018fc:	31 ff                	xor    edi,edi
+  1018fe:	85 c0                	test   eax,eax
+  101900:	74 2b                	je     10192d <char const* int_to_string<16, 20u>(unsigned int, string<20u>&)+0x3e>
+  101902:	89 c3                	mov    ebx,eax
+  101904:	83 e3 0f             	and    ebx,0xf
+  101907:	89 da                	mov    edx,ebx
+  101909:	80 ca 30             	or     dl,0x30
+  10190c:	88 c6                	mov    dh,al
+  10190e:	80 c6 06             	add    dh,0x6
+  101911:	80 e6 0f             	and    dh,0xf
+  101914:	80 c6 41             	add    dh,0x41
+  101917:	83 fb 0a             	cmp    ebx,0xa
+  10191a:	0f b6 f2             	movzx  esi,dl
+  10191d:	0f b6 d6             	movzx  edx,dh
+  101920:	0f 42 d6             	cmovb  edx,esi
+  101923:	88 51 01             	mov    BYTE PTR [ecx+0x1],dl
+  101926:	41                   	inc    ecx
+  101927:	c1 e8 04             	shr    eax,0x4
+  10192a:	47                   	inc    edi
+  10192b:	eb d1                	jmp    1018fe <char const* int_to_string<16, 20u>(unsigned int, string<20u>&)+0xf>
+  10192d:	c6 41 01 00          	mov    BYTE PTR [ecx+0x1],0x0
+  101931:	d1 ef                	shr    edi,1
+  101933:	8b 75 0c             	mov    esi,DWORD PTR [ebp+0xc]
+  101936:	85 ff                	test   edi,edi
+  101938:	74 11                	je     10194b <char const* int_to_string<16, 20u>(unsigned int, string<20u>&)+0x5c>
+  10193a:	8a 06                	mov    al,BYTE PTR [esi]
+  10193c:	32 01                	xor    al,BYTE PTR [ecx]
+  10193e:	88 06                	mov    BYTE PTR [esi],al
+  101940:	32 01                	xor    al,BYTE PTR [ecx]
+  101942:	88 01                	mov    BYTE PTR [ecx],al
+  101944:	30 06                	xor    BYTE PTR [esi],al
+  101946:	4f                   	dec    edi
+  101947:	46                   	inc    esi
+  101948:	49                   	dec    ecx
+  101949:	eb eb                	jmp    101936 <char const* int_to_string<16, 20u>(unsigned int, string<20u>&)+0x47>
+  10194b:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+  10194e:	5e                   	pop    esi
+  10194f:	5f                   	pop    edi
+  101950:	5b                   	pop    ebx
+  101951:	5d                   	pop    ebp
+  101952:	c3                   	ret    
+
+00101953 <char const* int_to_string<10, 20u>(unsigned int, string<20u>&)>:
+  101953:	55                   	push   ebp
+  101954:	89 e5                	mov    ebp,esp
+  101956:	53                   	push   ebx
+  101957:	57                   	push   edi
+  101958:	56                   	push   esi
+  101959:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  10195c:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  10195f:	8d 71 ff             	lea    esi,[ecx-0x1]
+  101962:	31 ff                	xor    edi,edi
+  101964:	6a 0a                	push   0xa
+  101966:	5b                   	pop    ebx
+  101967:	85 c0                	test   eax,eax
+  101969:	74 0e                	je     101979 <char const* int_to_string<10, 20u>(unsigned int, string<20u>&)+0x26>
+  10196b:	31 d2                	xor    edx,edx
+  10196d:	f7 f3                	div    ebx
+  10196f:	80 ca 30             	or     dl,0x30
+  101972:	88 56 01             	mov    BYTE PTR [esi+0x1],dl
+  101975:	46                   	inc    esi
+  101976:	47                   	inc    edi
+  101977:	eb ee                	jmp    101967 <char const* int_to_string<10, 20u>(unsigned int, string<20u>&)+0x14>
+  101979:	c6 46 01 00          	mov    BYTE PTR [esi+0x1],0x0
+  10197d:	d1 ef                	shr    edi,1
+  10197f:	89 c8                	mov    eax,ecx
+  101981:	85 ff                	test   edi,edi
+  101983:	74 11                	je     101996 <char const* int_to_string<10, 20u>(unsigned int, string<20u>&)+0x43>
+  101985:	8a 10                	mov    dl,BYTE PTR [eax]
+  101987:	32 16                	xor    dl,BYTE PTR [esi]
+  101989:	88 10                	mov    BYTE PTR [eax],dl
+  10198b:	32 16                	xor    dl,BYTE PTR [esi]
+  10198d:	88 16                	mov    BYTE PTR [esi],dl
+  10198f:	30 10                	xor    BYTE PTR [eax],dl
+  101991:	4f                   	dec    edi
+  101992:	40                   	inc    eax
+  101993:	4e                   	dec    esi
+  101994:	eb eb                	jmp    101981 <char const* int_to_string<10, 20u>(unsigned int, string<20u>&)+0x2e>
+  101996:	89 c8                	mov    eax,ecx
+  101998:	5e                   	pop    esi
+  101999:	5f                   	pop    edi
+  10199a:	5b                   	pop    ebx
+  10199b:	5d                   	pop    ebp
+  10199c:	c3                   	ret    
+
+0010199d <void term::fatal_error<char const*>(char const*)>:
+  10199d:	55                   	push   ebp
+  10199e:	89 e5                	mov    ebp,esp
+  1019a0:	ff 75 08             	push   DWORD PTR [ebp+0x8]
+  1019a3:	e8 33 f7 ff ff       	call   1010db <term::write(char const*)>
+  1019a8:	58                   	pop    eax
+  1019a9:	f4                   	hlt    
+  1019aa:	eb fe                	jmp    1019aa <void term::fatal_error<char const*>(char const*)+0xd>
+
+001019ac <string<80u>::operator==(char const*) const>:
+  1019ac:	55                   	push   ebp
+  1019ad:	89 e5                	mov    ebp,esp
+  1019af:	53                   	push   ebx
+  1019b0:	56                   	push   esi
+  1019b1:	6a b0                	push   0xffffffb0
+  1019b3:	59                   	pop    ecx
+  1019b4:	8b 55 0c             	mov    edx,DWORD PTR [ebp+0xc]
+  1019b7:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  1019ba:	b0 01                	mov    al,0x1
+  1019bc:	85 c9                	test   ecx,ecx
+  1019be:	74 13                	je     1019d3 <string<80u>::operator==(char const*) const+0x27>
+  1019c0:	8a 5c 0a 50          	mov    bl,BYTE PTR [edx+ecx*1+0x50]
+  1019c4:	84 db                	test   bl,bl
+  1019c6:	74 0b                	je     1019d3 <string<80u>::operator==(char const*) const+0x27>
+  1019c8:	3a 5c 0e 50          	cmp    bl,BYTE PTR [esi+ecx*1+0x50]
+  1019cc:	8d 49 01             	lea    ecx,[ecx+0x1]
+  1019cf:	74 e9                	je     1019ba <string<80u>::operator==(char const*) const+0xe>
+  1019d1:	31 c0                	xor    eax,eax
+  1019d3:	5e                   	pop    esi
+  1019d4:	5b                   	pop    ebx
+  1019d5:	5d                   	pop    ebp
+  1019d6:	c3                   	ret    
+  1019d7:	cc                   	int3   
+
+001019d8 <game_of_life::game_of_life()>:
+  1019d8:	55                   	push   ebp
+  1019d9:	89 e5                	mov    ebp,esp
+  1019db:	53                   	push   ebx
+  1019dc:	57                   	push   edi
+  1019dd:	56                   	push   esi
+  1019de:	83 e4 f8             	and    esp,0xfffffff8
+  1019e1:	81 ec e0 09 00 00    	sub    esp,0x9e0
+  1019e7:	8b 7d 08             	mov    edi,DWORD PTR [ebp+0x8]
+  1019ea:	8d b7 fc 00 00 00    	lea    esi,[edi+0xfc]
+  1019f0:	68 fb 00 00 00       	push   0xfb
+  1019f5:	6a 00                	push   0x0
+  1019f7:	57                   	push   edi
+  1019f8:	e8 0f f7 ff ff       	call   10110c <memset>
+  1019fd:	83 c4 0c             	add    esp,0xc
+  101a00:	83 a7 fc 01 00 00 00 	and    DWORD PTR [edi+0x1fc],0x0
+  101a07:	68 ff 00 00 00       	push   0xff
+  101a0c:	6a 00                	push   0x0
+  101a0e:	56                   	push   esi
+  101a0f:	e8 f8 f6 ff ff       	call   10110c <memset>
+  101a14:	83 c4 0c             	add    esp,0xc
+  101a17:	8d 44 24 10          	lea    eax,[esp+0x10]
+  101a1b:	68 71 15 00 00       	push   0x1571
+  101a20:	50                   	push   eax
+  101a21:	e8 88 00 00 00       	call   101aae <rand::random_gen::random_gen(unsigned int)>
+  101a26:	58                   	pop    eax
+  101a27:	59                   	pop    ecx
+  101a28:	6a 64                	push   0x64
+  101a2a:	5f                   	pop    edi
+  101a2b:	85 ff                	test   edi,edi
+  101a2d:	74 57                	je     101a86 <game_of_life::game_of_life()+0xae>
+  101a2f:	8d 44 24 10          	lea    eax,[esp+0x10]
+  101a33:	89 c3                	mov    ebx,eax
+  101a35:	50                   	push   eax
+  101a36:	e8 d1 00 00 00       	call   101b0c <rand::random_gen::next()>
+  101a3b:	59                   	pop    ecx
+  101a3c:	31 d2                	xor    edx,edx
+  101a3e:	6a 50                	push   0x50
+  101a40:	59                   	pop    ecx
+  101a41:	f7 f1                	div    ecx
+  101a43:	89 d6                	mov    esi,edx
+  101a45:	53                   	push   ebx
+  101a46:	e8 c1 00 00 00       	call   101b0c <rand::random_gen::next()>
+  101a4b:	59                   	pop    ecx
+  101a4c:	31 d2                	xor    edx,edx
+  101a4e:	6a 19                	push   0x19
+  101a50:	59                   	pop    ecx
+  101a51:	f7 f1                	div    ecx
+  101a53:	6b c2 50             	imul   eax,edx,0x50
+  101a56:	01 f0                	add    eax,esi
+  101a58:	50                   	push   eax
+  101a59:	ff 75 08             	push   DWORD PTR [ebp+0x8]
+  101a5c:	8d 44 24 08          	lea    eax,[esp+0x8]
+  101a60:	50                   	push   eax
+  101a61:	e8 fa 01 00 00       	call   101c60 <mem::bit_sequence<2000u>::bit_member::bit_member(mem::bit_sequence<2000u>&, int)>
+  101a66:	83 c4 0c             	add    esp,0xc
+  101a69:	8b 34 24             	mov    esi,DWORD PTR [esp]
+  101a6c:	8b 44 24 04          	mov    eax,DWORD PTR [esp+0x4]
+  101a70:	89 c1                	mov    ecx,eax
+  101a72:	80 e1 07             	and    cl,0x7
+  101a75:	31 db                	xor    ebx,ebx
+  101a77:	43                   	inc    ebx
+  101a78:	d3 e3                	shl    ebx,cl
+  101a7a:	99                   	cdq    
+  101a7b:	6a 08                	push   0x8
+  101a7d:	59                   	pop    ecx
+  101a7e:	f7 f9                	idiv   ecx
+  101a80:	20 1c 06             	and    BYTE PTR [esi+eax*1],bl
+  101a83:	4f                   	dec    edi
+  101a84:	eb a5                	jmp    101a2b <game_of_life::game_of_life()+0x53>
+  101a86:	8d 65 f4             	lea    esp,[ebp-0xc]
+  101a89:	5e                   	pop    esi
+  101a8a:	5f                   	pop    edi
+  101a8b:	5b                   	pop    ebx
+  101a8c:	5d                   	pop    ebp
+  101a8d:	c3                   	ret    
+
+00101a8e <game_of_life::run(int)>:
+  101a8e:	55                   	push   ebp
+  101a8f:	89 e5                	mov    ebp,esp
+  101a91:	56                   	push   esi
+  101a92:	83 7d 0c 00          	cmp    DWORD PTR [ebp+0xc],0x0
+  101a96:	7e 13                	jle    101aab <game_of_life::run(int)+0x1d>
+  101a98:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  101a9b:	56                   	push   esi
+  101a9c:	e8 f3 01 00 00       	call   101c94 <game_of_life::step()>
+  101aa1:	58                   	pop    eax
+  101aa2:	56                   	push   esi
+  101aa3:	e8 6a 02 00 00       	call   101d12 <game_of_life::draw()>
+  101aa8:	58                   	pop    eax
+  101aa9:	eb fe                	jmp    101aa9 <game_of_life::run(int)+0x1b>
+  101aab:	5e                   	pop    esi
+  101aac:	5d                   	pop    ebp
+  101aad:	c3                   	ret    
+
+00101aae <rand::random_gen::random_gen(unsigned int)>:
+  101aae:	55                   	push   ebp
+  101aaf:	89 e5                	mov    ebp,esp
+  101ab1:	57                   	push   edi
+  101ab2:	56                   	push   esi
+  101ab3:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  101ab6:	8b 7d 0c             	mov    edi,DWORD PTR [ebp+0xc]
+  101ab9:	8d 46 04             	lea    eax,[esi+0x4]
+  101abc:	68 c0 09 00 00       	push   0x9c0
+  101ac1:	6a 00                	push   0x0
+  101ac3:	50                   	push   eax
+  101ac4:	e8 43 f6 ff ff       	call   10110c <memset>
+  101ac9:	83 c4 0c             	add    esp,0xc
+  101acc:	c7 86 c4 09 00 00 71 	mov    DWORD PTR [esi+0x9c4],0x271
+  101ad3:	02 00 00 
+  101ad6:	89 3e                	mov    DWORD PTR [esi],edi
+  101ad8:	31 c0                	xor    eax,eax
+  101ada:	40                   	inc    eax
+  101adb:	89 86 c4 09 00 00    	mov    DWORD PTR [esi+0x9c4],eax
+  101ae1:	3d 6f 02 00 00       	cmp    eax,0x26f
+  101ae6:	77 1f                	ja     101b07 <rand::random_gen::random_gen(unsigned int)+0x59>
+  101ae8:	8b 4c 86 fc          	mov    ecx,DWORD PTR [esi+eax*4-0x4]
+  101aec:	89 ca                	mov    edx,ecx
+  101aee:	c1 ea 1e             	shr    edx,0x1e
+  101af1:	31 ca                	xor    edx,ecx
+  101af3:	69 ca 65 89 07 6c    	imul   ecx,edx,0x6c078965
+  101af9:	01 c1                	add    ecx,eax
+  101afb:	89 0c 86             	mov    DWORD PTR [esi+eax*4],ecx
+  101afe:	8b 86 c4 09 00 00    	mov    eax,DWORD PTR [esi+0x9c4]
+  101b04:	40                   	inc    eax
+  101b05:	eb d4                	jmp    101adb <rand::random_gen::random_gen(unsigned int)+0x2d>
+  101b07:	5e                   	pop    esi
+  101b08:	5f                   	pop    edi
+  101b09:	5d                   	pop    ebp
+  101b0a:	c3                   	ret    
+  101b0b:	cc                   	int3   
+
+00101b0c <rand::random_gen::next()>:
+  101b0c:	55                   	push   ebp
+  101b0d:	89 e5                	mov    ebp,esp
+  101b0f:	53                   	push   ebx
+  101b10:	57                   	push   edi
+  101b11:	56                   	push   esi
+  101b12:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  101b15:	8b 88 c4 09 00 00    	mov    ecx,DWORD PTR [eax+0x9c4]
+  101b1b:	81 f9 70 02 00 00    	cmp    ecx,0x270
+  101b21:	0f 82 cc 00 00 00    	jb     101bf3 <rand::random_gen::next()+0xe7>
+  101b27:	b9 74 fc ff ff       	mov    ecx,0xfffffc74
+  101b2c:	ba 00 00 00 80       	mov    edx,0x80000000
+  101b31:	85 c9                	test   ecx,ecx
+  101b33:	74 3b                	je     101b70 <rand::random_gen::next()+0x64>
+  101b35:	8b b4 08 8c 03 00 00 	mov    esi,DWORD PTR [eax+ecx*1+0x38c]
+  101b3c:	21 d6                	and    esi,edx
+  101b3e:	8b bc 08 90 03 00 00 	mov    edi,DWORD PTR [eax+ecx*1+0x390]
+  101b45:	89 fb                	mov    ebx,edi
+  101b47:	81 e3 fe ff ff 7f    	and    ebx,0x7ffffffe
+  101b4d:	09 f3                	or     ebx,esi
+  101b4f:	d1 eb                	shr    ebx,1
+  101b51:	83 e7 01             	and    edi,0x1
+  101b54:	8b 34 bd d8 00 10 00 	mov    esi,DWORD PTR [edi*4+0x1000d8]
+  101b5b:	33 b4 08 c0 09 00 00 	xor    esi,DWORD PTR [eax+ecx*1+0x9c0]
+  101b62:	31 de                	xor    esi,ebx
+  101b64:	89 b4 08 8c 03 00 00 	mov    DWORD PTR [eax+ecx*1+0x38c],esi
+  101b6b:	83 c1 04             	add    ecx,0x4
+  101b6e:	eb c1                	jmp    101b31 <rand::random_gen::next()+0x25>
+  101b70:	b9 d0 f9 ff ff       	mov    ecx,0xfffff9d0
+  101b75:	ba 00 00 00 80       	mov    edx,0x80000000
+  101b7a:	85 c9                	test   ecx,ecx
+  101b7c:	74 3b                	je     101bb9 <rand::random_gen::next()+0xad>
+  101b7e:	8b b4 08 bc 09 00 00 	mov    esi,DWORD PTR [eax+ecx*1+0x9bc]
+  101b85:	21 d6                	and    esi,edx
+  101b87:	8b bc 08 c0 09 00 00 	mov    edi,DWORD PTR [eax+ecx*1+0x9c0]
+  101b8e:	89 fb                	mov    ebx,edi
+  101b90:	81 e3 fe ff ff 7f    	and    ebx,0x7ffffffe
+  101b96:	09 f3                	or     ebx,esi
+  101b98:	d1 eb                	shr    ebx,1
+  101b9a:	83 e7 01             	and    edi,0x1
+  101b9d:	8b 34 bd d8 00 10 00 	mov    esi,DWORD PTR [edi*4+0x1000d8]
+  101ba4:	33 b4 08 30 06 00 00 	xor    esi,DWORD PTR [eax+ecx*1+0x630]
+  101bab:	31 de                	xor    esi,ebx
+  101bad:	89 b4 08 bc 09 00 00 	mov    DWORD PTR [eax+ecx*1+0x9bc],esi
+  101bb4:	83 c1 04             	add    ecx,0x4
+  101bb7:	eb c1                	jmp    101b7a <rand::random_gen::next()+0x6e>
+  101bb9:	b9 00 00 00 80       	mov    ecx,0x80000000
+  101bbe:	23 88 bc 09 00 00    	and    ecx,DWORD PTR [eax+0x9bc]
+  101bc4:	8b 10                	mov    edx,DWORD PTR [eax]
+  101bc6:	89 d6                	mov    esi,edx
+  101bc8:	81 e6 fe ff ff 7f    	and    esi,0x7ffffffe
+  101bce:	09 ce                	or     esi,ecx
+  101bd0:	d1 ee                	shr    esi,1
+  101bd2:	83 e2 01             	and    edx,0x1
+  101bd5:	8b 0c 95 d8 00 10 00 	mov    ecx,DWORD PTR [edx*4+0x1000d8]
+  101bdc:	33 88 30 06 00 00    	xor    ecx,DWORD PTR [eax+0x630]
+  101be2:	31 f1                	xor    ecx,esi
+  101be4:	89 88 bc 09 00 00    	mov    DWORD PTR [eax+0x9bc],ecx
+  101bea:	83 a0 c4 09 00 00 00 	and    DWORD PTR [eax+0x9c4],0x0
+  101bf1:	31 c9                	xor    ecx,ecx
+  101bf3:	8d 51 01             	lea    edx,[ecx+0x1]
+  101bf6:	89 90 c4 09 00 00    	mov    DWORD PTR [eax+0x9c4],edx
+  101bfc:	8b 04 88             	mov    eax,DWORD PTR [eax+ecx*4]
+  101bff:	89 c1                	mov    ecx,eax
+  101c01:	c1 e9 0b             	shr    ecx,0xb
+  101c04:	31 c1                	xor    ecx,eax
+  101c06:	89 c8                	mov    eax,ecx
+  101c08:	c1 e0 07             	shl    eax,0x7
+  101c0b:	25 80 56 2c 9d       	and    eax,0x9d2c5680
+  101c10:	31 c8                	xor    eax,ecx
+  101c12:	89 c1                	mov    ecx,eax
+  101c14:	c1 e1 0f             	shl    ecx,0xf
+  101c17:	81 e1 00 00 c6 ef    	and    ecx,0xefc60000
+  101c1d:	31 c1                	xor    ecx,eax
+  101c1f:	89 c8                	mov    eax,ecx
+  101c21:	c1 e8 12             	shr    eax,0x12
+  101c24:	31 c8                	xor    eax,ecx
+  101c26:	5e                   	pop    esi
+  101c27:	5f                   	pop    edi
+  101c28:	5b                   	pop    ebx
+  101c29:	5d                   	pop    ebp
+  101c2a:	c3                   	ret    
+  101c2b:	cc                   	int3   
+
+00101c2c <mem::bit_sequence<1000u>::bit_member::bit_member(mem::bit_sequence<1000u>&, int)>:
+  101c2c:	55                   	push   ebp
+  101c2d:	89 e5                	mov    ebp,esp
+  101c2f:	57                   	push   edi
+  101c30:	56                   	push   esi
+  101c31:	83 e4 f8             	and    esp,0xfffffff8
+  101c34:	83 ec 10             	sub    esp,0x10
+  101c37:	8b 45 10             	mov    eax,DWORD PTR [ebp+0x10]
+  101c3a:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  101c3d:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  101c40:	89 0e                	mov    DWORD PTR [esi],ecx
+  101c42:	89 46 04             	mov    DWORD PTR [esi+0x4],eax
+  101c45:	89 e7                	mov    edi,esp
+  101c47:	50                   	push   eax
+  101c48:	51                   	push   ecx
+  101c49:	57                   	push   edi
+  101c4a:	e8 dd ff ff ff       	call   101c2c <mem::bit_sequence<1000u>::bit_member::bit_member(mem::bit_sequence<1000u>&, int)>
+  101c4f:	83 c4 0c             	add    esp,0xc
+  101c52:	8a 47 08             	mov    al,BYTE PTR [edi+0x8]
+  101c55:	88 46 08             	mov    BYTE PTR [esi+0x8],al
+  101c58:	8d 65 f8             	lea    esp,[ebp-0x8]
+  101c5b:	5e                   	pop    esi
+  101c5c:	5f                   	pop    edi
+  101c5d:	5d                   	pop    ebp
+  101c5e:	c3                   	ret    
+  101c5f:	cc                   	int3   
+
+00101c60 <mem::bit_sequence<2000u>::bit_member::bit_member(mem::bit_sequence<2000u>&, int)>:
+  101c60:	55                   	push   ebp
+  101c61:	89 e5                	mov    ebp,esp
+  101c63:	57                   	push   edi
+  101c64:	56                   	push   esi
+  101c65:	83 e4 f8             	and    esp,0xfffffff8
+  101c68:	83 ec 10             	sub    esp,0x10
+  101c6b:	8b 45 10             	mov    eax,DWORD PTR [ebp+0x10]
+  101c6e:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  101c71:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  101c74:	89 0e                	mov    DWORD PTR [esi],ecx
+  101c76:	89 46 04             	mov    DWORD PTR [esi+0x4],eax
+  101c79:	89 e7                	mov    edi,esp
+  101c7b:	50                   	push   eax
+  101c7c:	51                   	push   ecx
+  101c7d:	57                   	push   edi
+  101c7e:	e8 dd ff ff ff       	call   101c60 <mem::bit_sequence<2000u>::bit_member::bit_member(mem::bit_sequence<2000u>&, int)>
+  101c83:	83 c4 0c             	add    esp,0xc
+  101c86:	8a 47 08             	mov    al,BYTE PTR [edi+0x8]
+  101c89:	88 46 08             	mov    BYTE PTR [esi+0x8],al
+  101c8c:	8d 65 f8             	lea    esp,[ebp-0x8]
+  101c8f:	5e                   	pop    esi
+  101c90:	5f                   	pop    edi
+  101c91:	5d                   	pop    ebp
+  101c92:	c3                   	ret    
+  101c93:	cc                   	int3   
+
+00101c94 <game_of_life::step()>:
+  101c94:	55                   	push   ebp
+  101c95:	89 e5                	mov    ebp,esp
+  101c97:	53                   	push   ebx
+  101c98:	57                   	push   edi
+  101c99:	56                   	push   esi
+  101c9a:	83 e4 f8             	and    esp,0xfffffff8
+  101c9d:	83 ec 10             	sub    esp,0x10
+  101ca0:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  101ca3:	e8 8c f3 ff ff       	call   101034 <term::clear()>
+  101ca8:	31 ff                	xor    edi,edi
+  101caa:	83 ff 50             	cmp    edi,0x50
+  101cad:	74 54                	je     101d03 <game_of_life::step()+0x6f>
+  101caf:	31 db                	xor    ebx,ebx
+  101cb1:	83 fb 19             	cmp    ebx,0x19
+  101cb4:	74 4a                	je     101d00 <game_of_life::step()+0x6c>
+  101cb6:	53                   	push   ebx
+  101cb7:	57                   	push   edi
+  101cb8:	56                   	push   esi
+  101cb9:	8d 44 24 0c          	lea    eax,[esp+0xc]
+  101cbd:	50                   	push   eax
+  101cbe:	e8 a1 00 00 00       	call   101d64 <game_of_life::board(int, int)>
+  101cc3:	83 c4 0c             	add    esp,0xc
+  101cc6:	53                   	push   ebx
+  101cc7:	57                   	push   edi
+  101cc8:	56                   	push   esi
+  101cc9:	e8 b8 00 00 00       	call   101d86 <game_of_life::neighbours(int, int) const>
+  101cce:	83 c4 0c             	add    esp,0xc
+  101cd1:	80 7c 24 08 00       	cmp    BYTE PTR [esp+0x8],0x0
+  101cd6:	0f 94 c1             	sete   cl
+  101cd9:	89 c2                	mov    edx,eax
+  101cdb:	83 e2 fe             	and    edx,0xfffffffe
+  101cde:	83 fa 02             	cmp    edx,0x2
+  101ce1:	0f 94 c2             	sete   dl
+  101ce4:	83 f8 03             	cmp    eax,0x3
+  101ce7:	0f 94 c0             	sete   al
+  101cea:	84 c8                	test   al,cl
+  101cec:	75 04                	jne    101cf2 <game_of_life::step()+0x5e>
+  101cee:	08 d1                	or     cl,dl
+  101cf0:	75 0b                	jne    101cfd <game_of_life::step()+0x69>
+  101cf2:	53                   	push   ebx
+  101cf3:	57                   	push   edi
+  101cf4:	56                   	push   esi
+  101cf5:	e8 0c 02 00 00       	call   101f06 <game_of_life::mark(int, int)>
+  101cfa:	83 c4 0c             	add    esp,0xc
+  101cfd:	43                   	inc    ebx
+  101cfe:	eb b1                	jmp    101cb1 <game_of_life::step()+0x1d>
+  101d00:	47                   	inc    edi
+  101d01:	eb a7                	jmp    101caa <game_of_life::step()+0x16>
+  101d03:	56                   	push   esi
+  101d04:	e8 5b 02 00 00       	call   101f64 <game_of_life::flip_board()>
+  101d09:	58                   	pop    eax
+  101d0a:	8d 65 f4             	lea    esp,[ebp-0xc]
+  101d0d:	5e                   	pop    esi
+  101d0e:	5f                   	pop    edi
+  101d0f:	5b                   	pop    ebx
+  101d10:	5d                   	pop    ebp
+  101d11:	c3                   	ret    
+
+00101d12 <game_of_life::draw()>:
+  101d12:	55                   	push   ebp
+  101d13:	89 e5                	mov    ebp,esp
+  101d15:	53                   	push   ebx
+  101d16:	57                   	push   edi
+  101d17:	56                   	push   esi
+  101d18:	83 e4 f8             	and    esp,0xfffffff8
+  101d1b:	83 ec 10             	sub    esp,0x10
+  101d1e:	31 ff                	xor    edi,edi
+  101d20:	6a 58                	push   0x58
+  101d22:	5b                   	pop    ebx
+  101d23:	83 ff 50             	cmp    edi,0x50
+  101d26:	74 33                	je     101d5b <game_of_life::draw()+0x49>
+  101d28:	31 f6                	xor    esi,esi
+  101d2a:	83 fe 19             	cmp    esi,0x19
+  101d2d:	74 29                	je     101d58 <game_of_life::draw()+0x46>
+  101d2f:	56                   	push   esi
+  101d30:	57                   	push   edi
+  101d31:	ff 75 08             	push   DWORD PTR [ebp+0x8]
+  101d34:	8d 44 24 0c          	lea    eax,[esp+0xc]
+  101d38:	50                   	push   eax
+  101d39:	e8 26 00 00 00       	call   101d64 <game_of_life::board(int, int)>
+  101d3e:	83 c4 0c             	add    esp,0xc
+  101d41:	80 7c 24 08 00       	cmp    BYTE PTR [esp+0x8],0x0
+  101d46:	89 d8                	mov    eax,ebx
+  101d48:	6a 2d                	push   0x2d
+  101d4a:	59                   	pop    ecx
+  101d4b:	0f 44 c1             	cmove  eax,ecx
+  101d4e:	50                   	push   eax
+  101d4f:	e8 13 f3 ff ff       	call   101067 <term::write(char)>
+  101d54:	58                   	pop    eax
+  101d55:	46                   	inc    esi
+  101d56:	eb d2                	jmp    101d2a <game_of_life::draw()+0x18>
+  101d58:	47                   	inc    edi
+  101d59:	eb c8                	jmp    101d23 <game_of_life::draw()+0x11>
+  101d5b:	8d 65 f4             	lea    esp,[ebp-0xc]
+  101d5e:	5e                   	pop    esi
+  101d5f:	5f                   	pop    edi
+  101d60:	5b                   	pop    ebx
+  101d61:	5d                   	pop    ebp
+  101d62:	c3                   	ret    
+  101d63:	cc                   	int3   
+
+00101d64 <game_of_life::board(int, int)>:
+  101d64:	55                   	push   ebp
+  101d65:	89 e5                	mov    ebp,esp
+  101d67:	56                   	push   esi
+  101d68:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  101d6b:	6b 45 14 50          	imul   eax,DWORD PTR [ebp+0x14],0x50
+  101d6f:	03 45 10             	add    eax,DWORD PTR [ebp+0x10]
+  101d72:	50                   	push   eax
+  101d73:	ff 75 0c             	push   DWORD PTR [ebp+0xc]
+  101d76:	56                   	push   esi
+  101d77:	e8 e4 fe ff ff       	call   101c60 <mem::bit_sequence<2000u>::bit_member::bit_member(mem::bit_sequence<2000u>&, int)>
+  101d7c:	83 c4 0c             	add    esp,0xc
+  101d7f:	89 f0                	mov    eax,esi
+  101d81:	5e                   	pop    esi
+  101d82:	5d                   	pop    ebp
+  101d83:	c2 04 00             	ret    0x4
+
+00101d86 <game_of_life::neighbours(int, int) const>:
+  101d86:	55                   	push   ebp
+  101d87:	89 e5                	mov    ebp,esp
+  101d89:	53                   	push   ebx
+  101d8a:	57                   	push   edi
+  101d8b:	56                   	push   esi
+  101d8c:	50                   	push   eax
+  101d8d:	8b 45 10             	mov    eax,DWORD PTR [ebp+0x10]
+  101d90:	8b 5d 0c             	mov    ebx,DWORD PTR [ebp+0xc]
+  101d93:	8b 75 08             	mov    esi,DWORD PTR [ebp+0x8]
+  101d96:	6b f8 50             	imul   edi,eax,0x50
+  101d99:	85 db                	test   ebx,ebx
+  101d9b:	7e 7d                	jle    101e1a <game_of_life::neighbours(int, int) const+0x94>
+  101d9d:	8d 4c 3b ff          	lea    ecx,[ebx+edi*1-0x1]
+  101da1:	89 c8                	mov    eax,ecx
+  101da3:	99                   	cdq    
+  101da4:	89 f3                	mov    ebx,esi
+  101da6:	6a 08                	push   0x8
+  101da8:	5e                   	pop    esi
+  101da9:	f7 fe                	idiv   esi
+  101dab:	0f b6 04 03          	movzx  eax,BYTE PTR [ebx+eax*1]
+  101daf:	80 e1 07             	and    cl,0x7
+  101db2:	0f b6 d1             	movzx  edx,cl
+  101db5:	31 c9                	xor    ecx,ecx
+  101db7:	0f a3 d0             	bt     eax,edx
+  101dba:	0f 92 c1             	setb   cl
+  101dbd:	83 7d 10 00          	cmp    DWORD PTR [ebp+0x10],0x0
+  101dc1:	7e 2b                	jle    101dee <game_of_life::neighbours(int, int) const+0x68>
+  101dc3:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+  101dc6:	8d 5c 38 af          	lea    ebx,[eax+edi*1-0x51]
+  101dca:	89 d8                	mov    eax,ebx
+  101dcc:	99                   	cdq    
+  101dcd:	6a 08                	push   0x8
+  101dcf:	5e                   	pop    esi
+  101dd0:	f7 fe                	idiv   esi
+  101dd2:	8b 55 08             	mov    edx,DWORD PTR [ebp+0x8]
+  101dd5:	0f b6 04 02          	movzx  eax,BYTE PTR [edx+eax*1]
+  101dd9:	80 e3 07             	and    bl,0x7
+  101ddc:	0f b6 d3             	movzx  edx,bl
+  101ddf:	8b 5d 0c             	mov    ebx,DWORD PTR [ebp+0xc]
+  101de2:	0f a3 d0             	bt     eax,edx
+  101de5:	83 d1 00             	adc    ecx,0x0
+  101de8:	83 7d 10 17          	cmp    DWORD PTR [ebp+0x10],0x17
+  101dec:	7f 25                	jg     101e13 <game_of_life::neighbours(int, int) const+0x8d>
+  101dee:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+  101df1:	8d 5c 38 4f          	lea    ebx,[eax+edi*1+0x4f]
+  101df5:	89 d8                	mov    eax,ebx
+  101df7:	99                   	cdq    
+  101df8:	6a 08                	push   0x8
+  101dfa:	5e                   	pop    esi
+  101dfb:	f7 fe                	idiv   esi
+  101dfd:	8b 55 08             	mov    edx,DWORD PTR [ebp+0x8]
+  101e00:	0f b6 04 02          	movzx  eax,BYTE PTR [edx+eax*1]
+  101e04:	80 e3 07             	and    bl,0x7
+  101e07:	0f b6 d3             	movzx  edx,bl
+  101e0a:	8b 5d 0c             	mov    ebx,DWORD PTR [ebp+0xc]
+  101e0d:	0f a3 d0             	bt     eax,edx
+  101e10:	83 d1 00             	adc    ecx,0x0
+  101e13:	83 fb 4e             	cmp    ebx,0x4e
+  101e16:	7e 04                	jle    101e1c <game_of_life::neighbours(int, int) const+0x96>
+  101e18:	eb 7c                	jmp    101e96 <game_of_life::neighbours(int, int) const+0x110>
+  101e1a:	31 c9                	xor    ecx,ecx
+  101e1c:	6a 08                	push   0x8
+  101e1e:	58                   	pop    eax
+  101e1f:	89 c6                	mov    esi,eax
+  101e21:	8d 5c 3b 01          	lea    ebx,[ebx+edi*1+0x1]
+  101e25:	89 d8                	mov    eax,ebx
+  101e27:	99                   	cdq    
+  101e28:	f7 fe                	idiv   esi
+  101e2a:	89 fe                	mov    esi,edi
+  101e2c:	8b 7d 08             	mov    edi,DWORD PTR [ebp+0x8]
+  101e2f:	0f b6 04 07          	movzx  eax,BYTE PTR [edi+eax*1]
+  101e33:	80 e3 07             	and    bl,0x7
+  101e36:	0f b6 d3             	movzx  edx,bl
+  101e39:	0f a3 d0             	bt     eax,edx
+  101e3c:	83 d1 00             	adc    ecx,0x0
+  101e3f:	8b 45 10             	mov    eax,DWORD PTR [ebp+0x10]
+  101e42:	85 c0                	test   eax,eax
+  101e44:	89 75 f0             	mov    DWORD PTR [ebp-0x10],esi
+  101e47:	7e 25                	jle    101e6e <game_of_life::neighbours(int, int) const+0xe8>
+  101e49:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+  101e4c:	8d 5c 30 b1          	lea    ebx,[eax+esi*1-0x4f]
+  101e50:	89 d8                	mov    eax,ebx
+  101e52:	99                   	cdq    
+  101e53:	6a 08                	push   0x8
+  101e55:	5e                   	pop    esi
+  101e56:	f7 fe                	idiv   esi
+  101e58:	0f b6 04 07          	movzx  eax,BYTE PTR [edi+eax*1]
+  101e5c:	80 e3 07             	and    bl,0x7
+  101e5f:	0f b6 d3             	movzx  edx,bl
+  101e62:	0f a3 d0             	bt     eax,edx
+  101e65:	83 d1 00             	adc    ecx,0x0
+  101e68:	83 7d 10 17          	cmp    DWORD PTR [ebp+0x10],0x17
+  101e6c:	7f 34                	jg     101ea2 <game_of_life::neighbours(int, int) const+0x11c>
+  101e6e:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+  101e71:	8b 55 f0             	mov    edx,DWORD PTR [ebp-0x10]
+  101e74:	8d 5c 10 51          	lea    ebx,[eax+edx*1+0x51]
+  101e78:	89 d8                	mov    eax,ebx
+  101e7a:	99                   	cdq    
+  101e7b:	6a 08                	push   0x8
+  101e7d:	5e                   	pop    esi
+  101e7e:	f7 fe                	idiv   esi
+  101e80:	8b 55 08             	mov    edx,DWORD PTR [ebp+0x8]
+  101e83:	0f b6 04 02          	movzx  eax,BYTE PTR [edx+eax*1]
+  101e87:	80 e3 07             	and    bl,0x7
+  101e8a:	0f b6 d3             	movzx  edx,bl
+  101e8d:	8b 5d 0c             	mov    ebx,DWORD PTR [ebp+0xc]
+  101e90:	0f a3 d0             	bt     eax,edx
+  101e93:	83 d1 00             	adc    ecx,0x0
+  101e96:	8b 75 10             	mov    esi,DWORD PTR [ebp+0x10]
+  101e99:	6b fe 50             	imul   edi,esi,0x50
+  101e9c:	85 f6                	test   esi,esi
+  101e9e:	7f 08                	jg     101ea8 <game_of_life::neighbours(int, int) const+0x122>
+  101ea0:	eb 3a                	jmp    101edc <game_of_life::neighbours(int, int) const+0x156>
+  101ea2:	8b 75 10             	mov    esi,DWORD PTR [ebp+0x10]
+  101ea5:	8b 7d f0             	mov    edi,DWORD PTR [ebp-0x10]
+  101ea8:	89 4d f0             	mov    DWORD PTR [ebp-0x10],ecx
+  101eab:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+  101eae:	8d 5c 38 b0          	lea    ebx,[eax+edi*1-0x50]
+  101eb2:	89 d8                	mov    eax,ebx
+  101eb4:	99                   	cdq    
+  101eb5:	89 f9                	mov    ecx,edi
+  101eb7:	6a 08                	push   0x8
+  101eb9:	5f                   	pop    edi
+  101eba:	f7 ff                	idiv   edi
+  101ebc:	89 cf                	mov    edi,ecx
+  101ebe:	8b 4d f0             	mov    ecx,DWORD PTR [ebp-0x10]
+  101ec1:	8b 55 08             	mov    edx,DWORD PTR [ebp+0x8]
+  101ec4:	0f b6 04 02          	movzx  eax,BYTE PTR [edx+eax*1]
+  101ec8:	80 e3 07             	and    bl,0x7
+  101ecb:	0f b6 d3             	movzx  edx,bl
+  101ece:	8b 5d 0c             	mov    ebx,DWORD PTR [ebp+0xc]
+  101ed1:	0f a3 d0             	bt     eax,edx
+  101ed4:	83 d1 00             	adc    ecx,0x0
+  101ed7:	83 fe 17             	cmp    esi,0x17
+  101eda:	7f 1f                	jg     101efb <game_of_life::neighbours(int, int) const+0x175>
+  101edc:	8d 5c 3b 50          	lea    ebx,[ebx+edi*1+0x50]
+  101ee0:	89 d8                	mov    eax,ebx
+  101ee2:	99                   	cdq    
+  101ee3:	6a 08                	push   0x8
+  101ee5:	5e                   	pop    esi
+  101ee6:	f7 fe                	idiv   esi
+  101ee8:	8b 55 08             	mov    edx,DWORD PTR [ebp+0x8]
+  101eeb:	0f b6 04 02          	movzx  eax,BYTE PTR [edx+eax*1]
+  101eef:	80 e3 07             	and    bl,0x7
+  101ef2:	0f b6 d3             	movzx  edx,bl
+  101ef5:	0f a3 d0             	bt     eax,edx
+  101ef8:	83 d1 00             	adc    ecx,0x0
+  101efb:	89 c8                	mov    eax,ecx
+  101efd:	83 c4 04             	add    esp,0x4
+  101f00:	5e                   	pop    esi
+  101f01:	5f                   	pop    edi
+  101f02:	5b                   	pop    ebx
+  101f03:	5d                   	pop    ebp
+  101f04:	c3                   	ret    
+  101f05:	cc                   	int3   
+
+00101f06 <game_of_life::mark(int, int)>:
+  101f06:	55                   	push   ebp
+  101f07:	89 e5                	mov    ebp,esp
+  101f09:	53                   	push   ebx
+  101f0a:	57                   	push   edi
+  101f0b:	56                   	push   esi
+  101f0c:	83 e4 f8             	and    esp,0xfffffff8
+  101f0f:	83 ec 20             	sub    esp,0x20
+  101f12:	be 00 01 00 00       	mov    esi,0x100
+  101f17:	03 75 08             	add    esi,DWORD PTR [ebp+0x8]
+  101f1a:	6b 7d 10 50          	imul   edi,DWORD PTR [ebp+0x10],0x50
+  101f1e:	03 7d 0c             	add    edi,DWORD PTR [ebp+0xc]
+  101f21:	8d 5c 24 10          	lea    ebx,[esp+0x10]
+  101f25:	57                   	push   edi
+  101f26:	56                   	push   esi
+  101f27:	53                   	push   ebx
+  101f28:	e8 33 fd ff ff       	call   101c60 <mem::bit_sequence<2000u>::bit_member::bit_member(mem::bit_sequence<2000u>&, int)>
+  101f2d:	83 c4 0c             	add    esp,0xc
+  101f30:	0f b6 5b 08          	movzx  ebx,BYTE PTR [ebx+0x8]
+  101f34:	89 e0                	mov    eax,esp
+  101f36:	57                   	push   edi
+  101f37:	56                   	push   esi
+  101f38:	89 c7                	mov    edi,eax
+  101f3a:	50                   	push   eax
+  101f3b:	e8 20 fd ff ff       	call   101c60 <mem::bit_sequence<2000u>::bit_member::bit_member(mem::bit_sequence<2000u>&, int)>
+  101f40:	83 c4 0c             	add    esp,0xc
+  101f43:	83 f3 01             	xor    ebx,0x1
+  101f46:	8b 37                	mov    esi,DWORD PTR [edi]
+  101f48:	8b 47 04             	mov    eax,DWORD PTR [edi+0x4]
+  101f4b:	89 c1                	mov    ecx,eax
+  101f4d:	80 e1 07             	and    cl,0x7
+  101f50:	d3 e3                	shl    ebx,cl
+  101f52:	6a 08                	push   0x8
+  101f54:	59                   	pop    ecx
+  101f55:	99                   	cdq    
+  101f56:	f7 f9                	idiv   ecx
+  101f58:	20 1c 06             	and    BYTE PTR [esi+eax*1],bl
+  101f5b:	8d 65 f4             	lea    esp,[ebp-0xc]
+  101f5e:	5e                   	pop    esi
+  101f5f:	5f                   	pop    edi
+  101f60:	5b                   	pop    ebx
+  101f61:	5d                   	pop    ebp
+  101f62:	c3                   	ret    
+  101f63:	cc                   	int3   
+
+00101f64 <game_of_life::flip_board()>:
+  101f64:	55                   	push   ebp
+  101f65:	89 e5                	mov    ebp,esp
+  101f67:	53                   	push   ebx
+  101f68:	57                   	push   edi
+  101f69:	56                   	push   esi
+  101f6a:	83 e4 f8             	and    esp,0xfffffff8
+  101f6d:	83 ec 28             	sub    esp,0x28
+  101f70:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  101f73:	05 00 01 00 00       	add    eax,0x100
+  101f78:	89 44 24 04          	mov    DWORD PTR [esp+0x4],eax
+  101f7c:	31 f6                	xor    esi,esi
+  101f7e:	81 fe d0 07 00 00    	cmp    esi,0x7d0
+  101f84:	74 43                	je     101fc9 <game_of_life::flip_board()+0x65>
+  101f86:	56                   	push   esi
+  101f87:	ff 74 24 08          	push   DWORD PTR [esp+0x8]
+  101f8b:	8d 44 24 20          	lea    eax,[esp+0x20]
+  101f8f:	50                   	push   eax
+  101f90:	e8 cb fc ff ff       	call   101c60 <mem::bit_sequence<2000u>::bit_member::bit_member(mem::bit_sequence<2000u>&, int)>
+  101f95:	83 c4 0c             	add    esp,0xc
+  101f98:	0f b6 5c 24 20       	movzx  ebx,BYTE PTR [esp+0x20]
+  101f9d:	56                   	push   esi
+  101f9e:	ff 75 08             	push   DWORD PTR [ebp+0x8]
+  101fa1:	8d 44 24 10          	lea    eax,[esp+0x10]
+  101fa5:	50                   	push   eax
+  101fa6:	e8 b5 fc ff ff       	call   101c60 <mem::bit_sequence<2000u>::bit_member::bit_member(mem::bit_sequence<2000u>&, int)>
+  101fab:	83 c4 0c             	add    esp,0xc
+  101fae:	8b 7c 24 08          	mov    edi,DWORD PTR [esp+0x8]
+  101fb2:	8b 44 24 0c          	mov    eax,DWORD PTR [esp+0xc]
+  101fb6:	89 c1                	mov    ecx,eax
+  101fb8:	80 e1 07             	and    cl,0x7
+  101fbb:	d3 e3                	shl    ebx,cl
+  101fbd:	99                   	cdq    
+  101fbe:	6a 08                	push   0x8
+  101fc0:	59                   	pop    ecx
+  101fc1:	f7 f9                	idiv   ecx
+  101fc3:	20 1c 07             	and    BYTE PTR [edi+eax*1],bl
+  101fc6:	46                   	inc    esi
+  101fc7:	eb b5                	jmp    101f7e <game_of_life::flip_board()+0x1a>
+  101fc9:	8d 65 f4             	lea    esp,[ebp-0xc]
+  101fcc:	5e                   	pop    esi
+  101fcd:	5f                   	pop    edi
+  101fce:	5b                   	pop    ebx
+  101fcf:	5d                   	pop    ebp
+  101fd0:	c3                   	ret    

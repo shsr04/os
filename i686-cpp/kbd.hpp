@@ -7,20 +7,36 @@ namespace kbd {
 
 string<80> LINE_BUFFER = {0};
 
+enum special_ascii : char { ASCII_END_OF_TEXT = 0x3, ASCII_BACKSPACE=0x8 };
+
 optional<char> get_ascii() {
+    static bool ctrl_pressed = false;
     auto a = ps2::get_output();
     // scan codes (set 2)
     // http://www.techtoys.com.hk/Downloads/Download/Microchip/PS2_driver/ScanCode.pdf
     switch (a) {
-    case 0xF0:
-        // skip break code
-        ps2::get_output();
-        return {};
+    case 0xF0: {
+        // break codes
+        auto b = ps2::get_output();
+        switch (b) {
+        case 0x14:
+            ctrl_pressed = false;
+            break;
+        }
+        break;
+    }
+    case 0x14:
+        ctrl_pressed = true;
+        break;
+    case 0x66:
+        return ASCII_BACKSPACE;
     case 0x1C:
         return 'a';
     case 0x32:
         return 'b';
     case 0x21:
+        if (ctrl_pressed)
+            return ASCII_END_OF_TEXT;
         return 'c';
     case 0x23:
         return 'd';
@@ -109,8 +125,9 @@ optional<char> get_ascii() {
     //      break;
     //  }
     default:
-        return {}; // unhandled make/break code
+        break; // unhandled make/break code
     }
+    return {};
 }
 
 auto &get_line(bool echo = true) {
@@ -122,11 +139,25 @@ auto &get_line(bool echo = true) {
         if (!_a)
             continue;
         char a = _a.value;
+
+        if(a==ASCII_BACKSPACE) {
+            b--;
+            term::Term.col-=1;
+            term::write(" ");
+            term::Term.col-=1;
+            continue;
+        }
         if (echo) {
             term::write(a);
         }
         if (a == '\n')
             break;
+        if (a == ASCII_END_OF_TEXT) {
+            term::write('\n');
+            LINE_BUFFER[0] = 0;
+            return LINE_BUFFER;
+        }
+        
         LINE_BUFFER[b++] = a;
     }
     LINE_BUFFER[b] = 0;

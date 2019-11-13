@@ -3,6 +3,15 @@
 #include "term.hpp"
 #include <initializer_list.hpp>
 
+/**
+ * Auto-referenced by clang for some big initializations.
+ */
+extern "C" void *memset(void *dest, int ch, uint32 count) {
+    for (uint32 a = 0; a < count; a++)
+        reinterpret_cast<uint8 *>(dest)[a] = static_cast<uint8>(ch);
+    return dest;
+}
+
 namespace mem {
 constexpr uint32 KB = 1024;
 constexpr uint32 MB = 1024 * KB;
@@ -22,27 +31,32 @@ template <uint32 N> class bit_sequence {
     array<uint8, N / 8 + 1> bytes_ = {0};
 
     class bit_member {
+         bit_sequence &b_;
+        int pos_;
         bool val_;
-        uint32 pos_;
 
       public:
-        constexpr bit_member(bool val, uint32 pos) : val_(val), pos_(pos) {}
+        constexpr bit_member( bit_sequence &b, int pos)
+            : b_(b), pos_(pos), val_(b[pos]) {}
         constexpr operator bool() const { return val_; }
-        constexpr uint32 index() const { return pos_; }
+        constexpr void operator=(bool p) {
+            b_.bytes_[pos_ / 8] &= (p << (pos_ % 8));
+        }
+        constexpr int index() const { return pos_; }
     };
 
     class bit_iterator {
-        const bit_sequence &b_;
-        uint32 pos_;
+        bit_sequence &b_;
+        int pos_;
 
       public:
-        constexpr bit_iterator(const bit_sequence &b, uint32 pos = 0)
+        constexpr bit_iterator(bit_sequence &b, int pos = 0)
             : b_(b), pos_(pos) {}
         constexpr auto &operator++() {
             pos_++;
             return *this;
         }
-        constexpr auto operator*() const { return bit_member(b_[pos_], pos_); }
+        constexpr auto operator*() { return bit_member(b_, pos_); }
         constexpr auto operator!=(bit_iterator p) const {
             return pos_ != p.pos_;
         }
@@ -51,20 +65,23 @@ template <uint32 N> class bit_sequence {
   public:
     constexpr bit_sequence() {}
     template <class... U> constexpr bit_sequence(U... p) {
-        for (auto a : {static_cast<uint32>(p)...}) {
+        for (auto a : {static_cast<int>(p)...}) {
             set(a);
         }
     }
 
-    constexpr bool operator[](uint32 i) const {
+    template <class I> constexpr bool operator[](I i) const {
         auto b = bytes_[i / 8];
         return (b & (1 << (i % 8))) != 0;
     }
-    constexpr auto begin() const { return bit_iterator(*this); }
-    constexpr auto end() const { return bit_iterator(*this, N); }
+    template <class I> constexpr bit_member operator[](I i) {
+        return bit_member(*this, static_cast<int>(i));
+    }
+    constexpr auto begin() { return bit_iterator(*this); }
+    constexpr auto end() { return bit_iterator(*this, N); }
     constexpr auto size() const { return N; }
 
-    constexpr void set(uint32 i, bool x = true) {
+    template <class I> constexpr void set(I i, bool x = true) {
         auto &b = bytes_[i / 8];
         if (x)
             b |= (1 << (i % 8));
@@ -81,9 +98,7 @@ template <uint32 N> class bit_sequence {
     }
 };
 
-static_assert(bit_sequence<5>().is_empty());
 constexpr bit_sequence<10> bit_test(2, 5, 7);
-static_assert(!bit_test.is_empty());
 static_assert(bit_test[2] && bit_test[5] && bit_test[7]);
 static_assert(!bit_test[1] && !bit_test[4] && !bit_test[6]);
 
@@ -134,9 +149,9 @@ template <uint32 BS, uint32 BN> class allocator {
     }
 
     constexpr optional<uint32> find_next_free() const {
-        for (auto b : block_list) {
-            if (!b)
-                return b.index();
+        for (uint32 a=0; a<BN; a++) {
+            if (!block_list[a])
+                return a;
         }
         return {};
     }

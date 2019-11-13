@@ -3,10 +3,13 @@
 #endif
 
 #include "core.hpp"
+#include "game_of_life.hpp"
 #include "kbd.hpp"
 #include "mem.hpp"
 #include "ps2.hpp"
+#include "rand.hpp"
 #include "term.hpp"
+#include "time.hpp"
 #include <initializer_list.hpp>
 #include <multiboot.h>
 
@@ -40,8 +43,27 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     while (true) {
         term::write(">  ");
         auto &line = kbd::get_line();
-        if(line=="exit") halt();
-        else if(line=="game of life") term::write("+ + +\n");
+        if (line == "exit") {
+            halt();
+        }
+        if(line=="clear") {
+            term::clear();
+        }
+
+        if (line == "game") {
+            game_of_life g;
+            g.run();
+        }
+        if (line == "matrix") {
+            rand::random_gen r;
+            term::clear();
+            term::Term.colour=term::GREEN;
+            for (int a = 0; a < term::COLS * term::ROWS; a++) {
+                term::write(char('$' + (r.next() % 60)));
+                time::delay(30);
+            }
+            term::Term.colour=term::WHITE;
+        }
     }
 
     term::write("Hello!\n");
