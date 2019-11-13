@@ -32,6 +32,9 @@ void write(char c) {
         Term.col = 0;
         Term.row++;
         break;
+    case '\t':
+        Term.col += 4;
+        break;
     default:
         set(index(), Term.colour, c);
         Term.col++;
@@ -53,10 +56,17 @@ void write(const char *s) {
     }
 }
 
+void write(int p) { write(static_cast<char>('0' + p)); }
+
 template <class... S> void write(S... p) {
     for (auto &a : {p...}) {
         write(a);
     }
+}
+
+template <class... S>[[noreturn]] void fatal_error(S... msg) {
+    term::write(msg...);
+    halt();
 }
 
 } // namespace term

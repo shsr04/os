@@ -76,9 +76,17 @@ void disable_2() { send(COMMAND, 0xA7); }
 void enable_2() { send(COMMAND, 0xA8); }
 bool reset_1() {
     send(DATA, 0xFF);
-    receive(DATA);  // this receive() should not be necessary...
+    receive(DATA); // this receive() should not be necessary...
     return receive(DATA) == 0xAA;
 }
+bool reset_2() {
+    send(COMMAND, 0xD4);
+    send(DATA, 0xFF);
+    receive(DATA); // this receive() should not be necessary...
+    return receive(DATA) == 0xAA;
+}
+
+void hard_reset() { send(COMMAND, 0xFE); }
 
 uint8 get_output() { return receive(DATA); }
 
@@ -87,17 +95,24 @@ void flush_output() {
         receive(DATA);
 }
 
-/*
-void send(uint16 port, uint8 byte) {
-    while (has_input_data())
-        ;
-    io::send(port, byte);
+bool startup(int device = 1) {
+    ps2::disable_1();
+    ps2::disable_2();
+    ps2::flush_output();
+    uint8 cb = ps2::read_config();
+    cb &= 0b10111100; // disable interrupts and translation
+    ps2::write_config(cb);
+    if (!(ps2::test_controller() && ps2::test_port_1()))
+        return false;
+    ps2::enable_1();
+    if (!ps2::reset_1())
+        return false;
+    if (device == 2) {
+        ps2::enable_2();
+        if (!ps2::reset_2())
+            return false;
+    }
+    return true;
 }
-uint8 receive(uint16 port) {
-    while (!has_output_data())
-        ;
-    return io::receive(port);
-}
-*/
 
 } // namespace ps2
