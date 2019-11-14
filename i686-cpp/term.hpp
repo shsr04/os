@@ -5,7 +5,7 @@ namespace term {
 constexpr int COLS = 80, ROWS = 25;
 volatile uint16 *VGA_BUF = reinterpret_cast<uint16 *>(0xB8000);
 
-enum colours : uint8 {
+enum COLOURS : uint8 {
     // https://www.fountainware.com/EXPL/vga_color_palettes.htm
     BLACK = 0,
     BLUE = 1,
@@ -25,11 +25,44 @@ enum colours : uint8 {
     WHITE = 15,
 };
 
-constexpr uint8 get_colour(colours fg, colours bg) { return fg | (bg << 4); }
+enum class direction { HOR, VERT };
 
-struct {
+class {
+    void increment_cursor(int &main, int &cross, int main_limit,
+                          int cross_limit, int times = 0) {
+        for (int a = 0; a < times; a++) {
+            main++;
+            if (main >= main_limit) {
+                main = 0;
+                cross++;
+            }
+            if (cross >= cross_limit) {
+                main = 0;
+                cross = 0;
+            }
+        }
+    }
+
+  public:
     int col = 0, row = 0;
-    uint8 colour = get_colour(WHITE, BLACK);
+    uint8 colour = COLOURS::WHITE;
+    bool flipped = false;
+    void set_colour(COLOURS fg, COLOURS bg = COLOURS::BLACK) {
+        colour = static_cast<uint8>(fg | (bg << 4));
+    }
+    void advance(int n = 1, direction dir = direction::HOR,
+                 bool carriage_return = false) {
+        if ((!flipped && dir == direction::HOR) ||
+            (flipped && dir == direction::VERT)) {
+            increment_cursor(col, row, COLS, ROWS, n);
+            if (carriage_return)
+                row = 0;
+        } else {
+            increment_cursor(row, col, ROWS, COLS, n);
+            if (carriage_return)
+                col = 0;
+        }
+    }
 } Term;
 
 constexpr auto index(int col = Term.col, int row = Term.row) {
@@ -51,24 +84,15 @@ void clear() {
 void write(char c) {
     switch (c) {
     case '\n':
-        Term.col = 0;
-        Term.row++;
+        Term.advance(1, direction::VERT, true);
         break;
     case '\t':
-        Term.col += 4;
+        Term.advance(4);
         break;
     default:
         set(index(), Term.colour, c);
-        Term.col++;
+        Term.advance();
         break;
-    }
-    if (Term.col >= COLS) {
-        Term.col = 0;
-        Term.row++;
-    }
-    if (Term.row >= ROWS) {
-        Term.col = 0;
-        Term.row = 0;
     }
 }
 
@@ -77,8 +101,6 @@ void write(const char *s) {
         write(s[a]);
     }
 }
-
-void write(int p) { write(static_cast<char>('0' + p)); }
 
 template <class... S> void write(S... p) {
     for (auto &a : {p...}) {

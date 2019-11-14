@@ -22,19 +22,19 @@ class random_gen {
     static constexpr array<uint32, 2> MAG01{0x0UL, MATRIX_A};
 
     array<uint32, N> mt; /* the array for the state vector  */
-    uint32 mti = N + 1;     /* mti==N+1 means mt[N] is not initialized */
+    uint32 mti = N + 1;  /* mti==N+1 means mt[N] is not initialized */
 
   public:
-    constexpr random_gen(uint32 seed = 5489) {
+    random_gen(uint32 seed = 5489) {
         mt[0] = seed & static_cast<uint32>(~0);
         for (mti = 1; mti < N; mti++) {
             mt[mti] =
                 (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
-            mt[mti] &= 0xffffffffUL;
+            mt[mti] &= static_cast<uint32>(~0);
         }
     }
 
-    constexpr uint32 next() {
+    uint32 next(uint32 limit = 0) {
         uint32 y = 0;
 
         if (mti >= N) { /* generate N words at one time */
@@ -62,7 +62,10 @@ class random_gen {
         y ^= (y << 15) & 0xefc60000UL;
         y ^= (y >> 18);
 
-        return y;
+        if (limit == 0)
+            return y;
+        else
+            return y % limit;
     }
 };
 

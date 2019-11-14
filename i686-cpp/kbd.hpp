@@ -5,7 +5,7 @@
 
 namespace kbd {
 
-string<80> LINE_BUFFER = {0};
+string<80> LINE_BUFFER;
 
 enum special_ascii : char { ASCII_END_OF_TEXT = 0x3, ASCII_BACKSPACE=0x8 };
 

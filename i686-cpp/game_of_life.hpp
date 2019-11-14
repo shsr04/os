@@ -49,7 +49,7 @@ class game_of_life {
     }
 
     void flip_board() {
-        for (auto a = 0; a < board_.size(); a++) {
+        for (uint32 a = 0; a < board_.size(); a++) {
             board_[a] = bool(marked_[a]);
         }
     }

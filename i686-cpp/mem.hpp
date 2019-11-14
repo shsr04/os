@@ -181,9 +181,8 @@ allocator<4 * sizeof(uint32), 1000> fast_allocator;
 
 void *operator new(uint32 count) {
     if (count >= 4 * sizeof(uint32)) {
-        string<10> str;
         term::fatal_error("Cannot allocate more than ",
-                          int_to_string(4 * sizeof(uint32), str),
+                          int_to_string(4 * sizeof(uint32)).str(),
                           " bytes at once\n");
     }
     auto r = fast_allocator.allocate(1);

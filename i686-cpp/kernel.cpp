@@ -26,12 +26,11 @@ template <class F> class Runner {
 
 extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     term::clear();
-    string<20> str;
-    term::write("Loaded GRUB info: ", int_to_string<16>(magic, str), "\n");
+    term::write("Loaded GRUB info: ", int_to_string<16>(magic).str(), "\n");
     if ((mb->flags & 1) == 1) {
-        term::write(
-            "Mem size: ", int_to_string(mb->mem_upper * mem::KB / mem::MB, str),
-            " MB\n");
+        term::write("Mem size: ",
+                    int_to_string(mb->mem_upper * mem::KB / mem::MB).str(),
+                    " MB\n");
     }
 
     term::write("PS/2: ");
@@ -43,26 +42,49 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     while (true) {
         term::write(">  ");
         auto &line = kbd::get_line();
-        if (line == "exit") {
+        auto command = line.extract_word<0>(' ').value;
+        auto param = line.extract_word<1>(' ').value;
+        term::write("'", command.str(), "' '", param.str(), "'\n");
+        if (command == "exit") {
             halt();
         }
-        if(line=="clear") {
+        if (command == "clear") {
             term::clear();
         }
+        if (command == "flip") {
+            term::Term.flipped = !term::Term.flipped;
+        }
+        if (command == "stoi") {
+            term::write("OK: '", int_to_string(string_to_int(param)).str(),
+                        "'\n");
+        }
 
-        if (line == "game") {
+        if (command == "game") {
             game_of_life g;
             g.run();
         }
-        if (line == "matrix") {
-            rand::random_gen r;
+        if (command == "matrix") {
             term::clear();
-            term::Term.colour=term::GREEN;
-            for (int a = 0; a < term::COLS * term::ROWS; a++) {
-                term::write(char('$' + (r.next() % 60)));
-                time::delay(30);
+            term::Term.set_colour(term::GREEN);
+            term::Term.flipped = true;
+            rand::random_gen r;
+            auto n = param != "" ? string_to_int(param) : 1;
+            for (int a = 0; a < n; a++) {
+                for (auto _ : range<0, term::COLS>) {
+                    (void)_;
+                    for (auto _ : range<0, term::ROWS>) {
+                        (void)_;
+                        if (r.next(10) == 1) {
+                            term::write('\n');
+                            break;
+                        }
+                        term::write(char('$' + (r.next(60))));
+                        time::delay(30);
+                    }
+                }
             }
-            term::Term.colour=term::WHITE;
+            term::Term.flipped = false;
+            term::Term.set_colour(term::WHITE);
         }
     }
 
