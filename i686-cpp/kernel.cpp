@@ -42,11 +42,13 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     while (true) {
         term::write(">  ");
         auto &line = kbd::get_line();
-        auto command = line.extract_word<0>(' ').value;
-        auto param = line.extract_word<1>(' ').value;
-        term::write("'", command.str(), "' '", param.str(), "'\n");
+        auto command = line.extract_word(0).value;
+        auto param = line.extract_word(1).value;
         if (command == "exit") {
             halt();
+        }
+        if (command == "reset") {
+            ps2::hard_reset();
         }
         if (command == "clear") {
             term::clear();
@@ -55,8 +57,10 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
             term::Term.flipped = !term::Term.flipped;
         }
         if (command == "stoi") {
-            term::write("OK: '", int_to_string(string_to_int(param)).str(),
-                        "'\n");
+            if (param!="") {
+                term::write("non-empty ");
+            }
+                term::write("OK: '", param.str(), "'\n");
         }
 
         if (command == "game") {
@@ -64,11 +68,11 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
             g.run();
         }
         if (command == "matrix") {
+            rand::random_gen r;
+            auto n = param != "" ? string_to_int(param) : 1;
             term::clear();
             term::Term.set_colour(term::GREEN);
             term::Term.flipped = true;
-            rand::random_gen r;
-            auto n = param != "" ? string_to_int(param) : 1;
             for (int a = 0; a < n; a++) {
                 for (auto _ : range<0, term::COLS>) {
                     (void)_;

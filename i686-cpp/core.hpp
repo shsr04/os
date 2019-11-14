@@ -16,10 +16,10 @@ template <class T> class optional {
     bool loaded_ = false;
 
   public:
-    const T value{};
+    const T value;
     const char *err = "(Unknown error)";
 
-    constexpr optional() = default;
+    constexpr optional() : value() {}
     constexpr optional(T p) : loaded_(true), value(p) {}
 
     constexpr operator bool() const { return loaded_; }
@@ -36,14 +36,14 @@ template <class T, uint32 N> class array {
   protected:
     static_assert(N > 0, "Please do not create an empty array");
     T data_[N];
-    int length_ = 0;
     int index_ = 0;
 
   public:
-    constexpr array() : data_{} {}
+    constexpr array() : data_{T()} {}
     template <class... U>
-    constexpr array(U &&... p)
-        : data_{static_cast<T>(p)...}, length_(sizeof...(p)) {}
+    constexpr array(U &&... p) : data_{static_cast<T>(p)...} {}
+    // array(array const &) = delete;
+    // array(array &&) = default;
 
     template <class I> constexpr auto &operator[](I i) { return data_[i]; }
     template <class I> constexpr auto operator[](I i) const { return data_[i]; }
@@ -55,8 +55,8 @@ template <class T, uint32 N> class array {
     /// Increment the internal index.
     constexpr auto operator++() { index_++; }
 
-    template <uint32 M> constexpr bool operator==(const array<T, M> &p) const {
-        for (uint32 a = 0; a < min(N, M); a++) {
+    constexpr bool operator==(const array<T, N> &p) const {
+        for (uint32 a = 0; a < N; a++) {
             if (operator[](a) != p[a])
                 return false;
         }
@@ -89,13 +89,11 @@ template <uint32 N> class string : public array<char, N> {
   public:
     using array<char, N>::operator==;
     constexpr bool operator==(const char *p) const {
-        for (auto a = 0; a < this->size(); a++) {
-            if (p[a] == 0)
-                return true;
-            else if (p[a] != this->operator[](a))
+        for (uint32 a = 0; a < length(); a++) {
+            if (p[a] == 0 || p[a] != this->operator[](a))
                 return false;
         }
-        return true;
+        return p[length()] == 0;
     }
     constexpr bool operator!=(const char *p) const { return !operator==(p); }
     /**
@@ -103,21 +101,28 @@ template <uint32 N> class string : public array<char, N> {
      */
     const char *str() const { return this->data_; }
 
+    constexpr auto length() const {
+        for (uint32 a = 0; a < N; a++) {
+            if (this->operator[](a) == 0)
+                return a;
+        }
+        return N;
+    }
     constexpr auto begin() const { return this->data_; }
-    constexpr auto end() const { return this->data_ + this->length_; }
+    constexpr auto end() const { return this->data_ + length(); }
 
-    template <int I> optional<string<N>> extract_word(char separator) const {
+    optional<string<N>> extract_word(int num, char separator = ' ') const {
         string<N> r;
         int seps = 0;
         for (auto &a : this->data_) {
             if (a == separator) {
                 seps++;
-            } else if (seps == I) {
+            } else if (seps == num) {
                 *r = a;
                 ++r;
             }
         }
-        if (seps < I)
+        if (seps < num)
             return {};
         *r = 0;
         return r;
@@ -134,14 +139,29 @@ template <class T, class U> class pair {
     pair(pair<T, U> const &) = delete;
 };
 
-template <int A, int B> constexpr auto range_impl() {
+template <int A, int B> class range_impl {
     static_assert(B > A, "Cannot create an empty/inverse range");
-    array<int, B - A> r;
-    for (int a = A; a < B; a++) {
-        r[a - A] = a;
-    }
-    return r;
-}
+    int a = A, b = B;
+
+    class range_iterator {
+        int value;
+
+      public:
+        range_iterator(int p) : value(p) {}
+        constexpr auto operator*() const { return value; }
+        constexpr auto operator++() {
+            value++;
+            return *this;
+        }
+        constexpr auto operator!=(const range_iterator &p) {
+            return value != p.value;
+        }
+    };
+
+  public:
+    constexpr auto begin() const { return range_iterator(a); }
+    constexpr auto end() const { return range_iterator(b); }
+};
 
 template <int A, int B> constexpr auto range = range_impl<A, B>();
 
@@ -206,9 +226,12 @@ template <uint32 N> constexpr auto string_to_int(const string<N> &p) {
 
 namespace {
 constexpr string<10> test_string{'9', '8', '7'};
+static_assert(test_string.length() == 3);
+static_assert(test_string != "98" && test_string == "987" &&
+              test_string != "9876" && test_string == test_string);
 static_assert(string_to_int(test_string) == 987);
 static_assert(int_to_string(15500) == "15500");
-static_assert(int_to_string(string_to_int(test_string)) == test_string);
+static_assert(int_to_string(string_to_int(test_string)) == "987");
 } // namespace
 
 [[noreturn]] void halt() {
