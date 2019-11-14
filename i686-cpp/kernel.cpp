@@ -27,6 +27,13 @@ template <class F> class Runner {
 extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     term::clear();
     term::write("Loaded GRUB info: ", int_to_string<16>(magic).str(), "\n");
+
+    if (mb->mods_count > 0) {
+        term::write("Loaded ", int_to_string(mb->mods_count).str(),
+                    " modules at 0x", int_to_string<16>(mb->mods_addr).str(),
+                    "\n");
+    }
+
     if ((mb->flags & 1) == 1) {
         term::write("Mem size: ",
                     int_to_string(mb->mem_upper * mem::KB / mem::MB).str(),
@@ -53,14 +60,24 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
         if (command == "clear") {
             term::clear();
         }
+        if (command == "read") {
+            auto address = reinterpret_cast<uint32 *>(string_to_int(param));
+            term::write("-> ", int_to_string<16>(*address).str(), "\n");
+        }
         if (command == "flip") {
             term::Term.flipped = !term::Term.flipped;
         }
         if (command == "stoi") {
-            if (param!="") {
+            if (param != "") {
                 term::write("non-empty ");
             }
-                term::write("OK: '", param.str(), "'\n");
+            term::write("OK: '", param.str(), "'\n");
+        }
+        if (command == "mod") {
+            auto mod = reinterpret_cast<void (*)(void)>(mb->mods_addr);
+            term::write(">>> ");
+            time::delay(100);
+            mod();
         }
 
         if (command == "game") {
