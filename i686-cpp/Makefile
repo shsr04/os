@@ -2,9 +2,9 @@ default: kernel.elf
 
 TargetFlags := --target=i686-unknown-none	# magic!
 WarningFlags := -Wall -Wextra -Wconversion
-CompileFlags := -std=c++17 -Oz -fno-exceptions -fno-rtti -I. -Iresources $(TargetFlags) $(WarningFlags)
+CompileFlags := -std=c++2a -O3 -g -fno-exceptions -fno-rtti $(TargetFlags) $(WarningFlags)
 LinkFlags := 
-Modules := mod_print.elf
+Modules := modules/mod_print.mod
 
 # Needs: 
 #	LLVM toolchain
@@ -26,8 +26,8 @@ sim-qemu: kernel.elf
 kernel.elf: start.o kernel.o
 	ld.lld -T link.ld -o $@ $^
 
-%.elf: %.load.o %.o 
-	ld.lld -T mod_link.ld -o $@ $^
+%.mod: %.load.o %.o 
+	ld.lld -T modules/mod_link.ld -o $@ $^
 
 %.o: %.cpp
 	clang++ -c $(CompileFlags) -o $@ $<

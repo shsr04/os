@@ -2,16 +2,16 @@
 #error "The kernel must target bare metal!"
 #endif
 
-#include "core.hpp"
-#include "game_of_life.hpp"
-#include "kbd.hpp"
-#include "mem.hpp"
-#include "ps2.hpp"
-#include "rand.hpp"
-#include "term.hpp"
-#include "time.hpp"
-#include <initializer_list.hpp>
-#include <multiboot.h>
+#include "kernel/core.hpp"
+#include "kernel/game_of_life.hpp"
+#include "kernel/initializer_list.hpp"
+#include "kernel/kbd.hpp"
+#include "kernel/mem.hpp"
+#include "kernel/multiboot.h"
+#include "kernel/ps2.hpp"
+#include "kernel/rand.hpp"
+#include "kernel/term.hpp"
+#include "kernel/time.hpp"
 
 template <class F> class Runner {
     F f_;
@@ -28,10 +28,17 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     term::clear();
     term::write("Loaded GRUB info: ", int_to_string<16>(magic).str(), "\n");
 
+    auto mods = reinterpret_cast<multiboot_module_t *>(mb->mods_addr);
     if (mb->mods_count > 0) {
         term::write("Loaded ", int_to_string(mb->mods_count).str(),
-                    " modules at 0x", int_to_string<16>(mb->mods_addr).str(),
-                    "\n");
+                    " modules\n");
+        for (uint32 a = 0; a < mb->mods_count; a++) {
+            term::write("Module ", int_to_string(a).str(), ": from ",
+                        int_to_string<16>(mods[a].mod_start).str(), " to ",
+                        int_to_string<16>(mods[a].mod_end).str(), "\n");
+            term::write(" ", reinterpret_cast<const char *>(mods[a].cmdline),
+                        "\n");
+        }
     }
 
     if ((mb->flags & 1) == 1) {
@@ -48,9 +55,10 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
 
     while (true) {
         term::write(">  ");
-        auto &line = kbd::get_line();
-        auto command = line.extract_word(0).value;
-        auto param = line.extract_word(1).value;
+        rand::random_gen rnd;
+        auto &&line = kbd::get_line();
+        auto &&command = line.extract_word(0).value;
+        auto &&param = line.extract_word(1).value;
         if (command == "exit") {
             halt();
         }
@@ -61,8 +69,8 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
             term::clear();
         }
         if (command == "read") {
-            auto address = reinterpret_cast<uint32 *>(string_to_int(param));
-            term::write("-> ", int_to_string<16>(*address).str(), "\n");
+            auto address = reinterpret_cast<uint32 *>(string_to_int<16>(param));
+            term::write("-> 0x", int_to_string<16>(*address).str(), "\n");
         }
         if (command == "flip") {
             term::Term.flipped = !term::Term.flipped;
@@ -74,10 +82,18 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
             term::write("OK: '", param.str(), "'\n");
         }
         if (command == "mod") {
-            auto mod = reinterpret_cast<void (*)(void)>(mb->mods_addr);
-            term::write(">>> ");
-            time::delay(100);
-            mod();
+            if (int mod_num; param != "" && (mod_num = string_to_int(param)) <
+                                                int(mb->mods_count)) {
+                auto mod = reinterpret_cast<int (*)(void)>(
+                    mods[mod_num].mod_start + 0x1000);
+                time::delay(100);
+                term::write(">>> ", int_to_string<16>(mod()).str(), "\n");
+            } else {
+                term::write("Usage: mod <num>\n\tnum: module number ");
+                if(mb->mods_count>0) term::write("(max: ",
+                            int_to_string(mb->mods_count).str(), ")\n");
+                else term::write("(none loaded)\n");
+            }
         }
 
         if (command == "game") {
@@ -85,27 +101,34 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
             g.run();
         }
         if (command == "matrix") {
-            rand::random_gen r;
             auto n = param != "" ? string_to_int(param) : 1;
             term::clear();
             term::Term.set_colour(term::GREEN);
             term::Term.flipped = true;
+            term::Term.wrap = true;
             for (int a = 0; a < n; a++) {
                 for (auto _ : range<0, term::COLS>) {
                     (void)_;
                     for (auto _ : range<0, term::ROWS>) {
                         (void)_;
-                        if (r.next(10) == 1) {
+                        if (rnd.next(10) == 1) {
                             term::write('\n');
                             break;
                         }
-                        term::write(char('$' + (r.next(60))));
+                        term::write(char('$' + (rnd.next(60))));
                         time::delay(30);
                     }
                 }
             }
             term::Term.flipped = false;
+            term::Term.wrap = false;
             term::Term.set_colour(term::WHITE);
+        }
+        if (command == "coredump") {
+            for (auto a : range<0, (term::ROWS + 2) * term::COLS>) {
+                term::write(char('$' + (rnd.next(40))));
+                time::delay(20);
+            }
         }
     }
 
