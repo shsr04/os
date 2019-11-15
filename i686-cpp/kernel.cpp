@@ -7,6 +7,7 @@
 #include "kernel/initializer_list.hpp"
 #include "kernel/kbd.hpp"
 #include "kernel/mem.hpp"
+#include "kernel/mod.hpp"
 #include "kernel/multiboot.h"
 #include "kernel/ps2.hpp"
 #include "kernel/rand.hpp"
@@ -28,16 +29,14 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     term::clear();
     term::write("Loaded GRUB info: ", int_to_string<16>(magic).str(), "\n");
 
-    auto mods = reinterpret_cast<multiboot_module_t *>(mb->mods_addr);
-    if (mb->mods_count > 0) {
-        term::write("Loaded ", int_to_string(mb->mods_count).str(),
-                    " modules\n");
-        for (uint32 a = 0; a < mb->mods_count; a++) {
-            term::write("Module ", int_to_string(a).str(), ": from ",
-                        int_to_string<16>(mods[a].mod_start).str(), " to ",
-                        int_to_string<16>(mods[a].mod_end).str(), "\n");
-            term::write(" ", reinterpret_cast<const char *>(mods[a].cmdline),
-                        "\n");
+    mod::module_list mods(*mb);
+    if (mods.size() > 0) {
+        term::write("Loaded ", int_to_string(mods.size()).str(), " modules\n");
+        for (auto &&a : mods) {
+            term::write("Module ", int_to_string(a.index).str(), ": from ",
+                        int_to_string<16>(a().mod_start).str(), " to ",
+                        int_to_string<16>(a().mod_end).str(), "\n");
+            term::write(" ", reinterpret_cast<const char *>(a().cmdline), "\n");
         }
     }
 
@@ -53,9 +52,10 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     else
         term::fatal_error("FAIL (shutting down)\n");
 
+    uint32 uninit;
+    rand::random_gen rnd(uninit);
     while (true) {
         term::write(">  ");
-        rand::random_gen rnd;
         auto &&line = kbd::get_line();
         auto &&command = line.extract_word(0).value;
         auto &&param = line.extract_word(1).value;
@@ -82,17 +82,17 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
             term::write("OK: '", param.str(), "'\n");
         }
         if (command == "mod") {
-            if (int mod_num; param != "" && (mod_num = string_to_int(param)) <
-                                                int(mb->mods_count)) {
-                auto mod = reinterpret_cast<int (*)(void)>(
-                    mods[mod_num].mod_start + 0x1000);
+            if (param != "" && mods.entry_point(string_to_int(param))) {
+                auto proc = mods.entry_point(string_to_int(param)).value;
                 time::delay(100);
-                term::write(">>> ", int_to_string<16>(mod()).str(), "\n");
+                term::write(">>> ", int_to_string<16>(proc()).str(), "\n");
             } else {
                 term::write("Usage: mod <num>\n\tnum: module number ");
-                if(mb->mods_count>0) term::write("(max: ",
-                            int_to_string(mb->mods_count).str(), ")\n");
-                else term::write("(none loaded)\n");
+                if (mb->mods_count > 0)
+                    term::write("(max: ", int_to_string(mb->mods_count).str(),
+                                ")\n");
+                else
+                    term::write("(none loaded)\n");
             }
         }
 
@@ -102,11 +102,11 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
         }
         if (command == "matrix") {
             auto n = param != "" ? string_to_int(param) : 1;
-            term::clear();
             term::Term.set_colour(term::GREEN);
             term::Term.flipped = true;
             term::Term.wrap = true;
             for (int a = 0; a < n; a++) {
+                term::clear();
                 for (auto _ : range<0, term::COLS>) {
                     (void)_;
                     for (auto _ : range<0, term::ROWS>) {
@@ -115,7 +115,7 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
                             term::write('\n');
                             break;
                         }
-                        term::write(char('$' + (rnd.next(60))));
+                        term::write(char(' ' + (rnd.next(64))));
                         time::delay(30);
                     }
                 }

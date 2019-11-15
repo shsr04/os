@@ -50,10 +50,38 @@ template <class T> class optional {
     }
 };
 
+template <class T> class dual_iterator {
+    int index_ = 0;
+    T *ptr_;
+
+    /// Access either the current index or value.
+    struct dual_element {
+        const int index;
+        const T value;
+        /// Automatic conversion to T
+        constexpr operator T() const { return value; }
+        /// If conversion not triggered, force with the function-call operator
+        constexpr auto operator()() const { return value; }
+    };
+
+  public:
+    constexpr dual_iterator(T *p) : ptr_(p) {}
+
+    constexpr auto operator*() const { return dual_element{index_, *ptr_}; }
+    constexpr auto operator++() {
+        index_++;
+        ptr_++;
+        return *this;
+    }
+    constexpr auto operator!=(const dual_iterator<T> &p) {
+        return ptr_ != p.ptr_;
+    }
+};
+
 template <class T, uint32 N> class array {
   protected:
     static_assert(N > 0, "Please do not create an empty array");
-    T data_[N];
+    T data_[N + 1];
     int index_ = 0;
 
   public:
@@ -65,12 +93,12 @@ template <class T, uint32 N> class array {
     template <class I> constexpr auto &operator[](I i) { return data_[i]; }
     template <class I> constexpr auto operator[](I i) const { return data_[i]; }
 
-    /// Get the array's internal index. (can be freely used for convenience)
-    constexpr auto &index() { return index_; }
-    /// Get the element at the internal index.
-    constexpr auto &operator*() { return data_[index_]; }
-    /// Increment the internal index.
-    constexpr auto operator++() { index_++; }
+    //  /// Get the array's internal index. (can be freely used for convenience)
+    //  constexpr auto &index() { return index_; }
+    //  /// Get the element at the internal index.
+    //  constexpr auto &operator*() { return data_[index_]; }
+    //  /// Increment the internal index.
+    //  constexpr auto operator++() { index_++; }
 
     constexpr bool operator==(const array<T, N> &p) const {
         for (uint32 a = 0; a < N; a++) {
@@ -87,8 +115,8 @@ template <class T, uint32 N> class array {
         return r;
     }
 
-    constexpr auto begin() const { return data_; }
-    constexpr auto end() const { return data_ + N; }
+    constexpr auto begin() const { return dual_iterator<const T>(data_); }
+    constexpr auto end() const { return dual_iterator<const T>(data_ + N); }
     constexpr auto size() const { return static_cast<int>(N); }
 
     auto count(T x) const {
@@ -125,23 +153,27 @@ template <uint32 N> class string : public array<char, N> {
         }
         return N;
     }
-    constexpr auto begin() const { return this->data_; }
-    constexpr auto end() const { return this->data_ + length(); }
+    constexpr auto begin() const {
+        return dual_iterator<const char>(this->data_);
+    }
+    constexpr auto end() const {
+        return dual_iterator<const char>(this->data_ + length());
+    }
 
-    optional<string<N>> extract_word(int num, char separator = ' ') const {
+    constexpr optional<string<N>> extract_word(int num,
+                                               char separator = ' ') const {
         string<N> r;
-        int seps = 0;
-        for (auto &a : this->data_) {
+        int seps = 0, i = 0;
+        for (auto a : *this) {
             if (a == separator) {
                 seps++;
             } else if (seps == num) {
-                *r = a;
-                ++r;
+                r[i++] = a();
+                // r[a.index] = a(); // TODO fix
             }
         }
         if (seps < num)
             return {};
-        *r = 0;
         return move(r);
     }
 };
@@ -241,12 +273,17 @@ constexpr auto string_to_int(const string<N> &p) {
     int r = 0;
     for (auto c : p) {
         r *= B;
-        r += static_cast<int>(c - '0');
+        r += static_cast<int>(c.value - '0');
     }
     return r;
 }
 
 namespace {
+constexpr array<int, 10> test_array{5, 4, 3};
+static_assert(test_array.size() == 10);
+constexpr auto test_iterator = *test_array.begin();
+static_assert(test_iterator.index == 0 && test_iterator == 5);
+
 constexpr string<10> test_string{'9', '8', '7'};
 static_assert(test_string.length() == 3);
 static_assert(test_string != "98" && test_string == "987" &&
@@ -254,6 +291,13 @@ static_assert(test_string != "98" && test_string == "987" &&
 static_assert(string_to_int(test_string) == 987);
 static_assert(int_to_string(15500) == "15500");
 static_assert(int_to_string(string_to_int(test_string)) == "987");
+constexpr string<10> test_string2{'x', 'y', ' ', 'z', ' ', '-'};
+static_assert(test_string2.length() == 6);
+constexpr auto test_iterator2 = *(++(++(++test_string2.begin())));
+static_assert(test_iterator2 == 'z' && test_iterator2.index == 3);
+static_assert(test_string2.extract_word(0).value == "xy" &&
+              test_string2.extract_word(1) &&
+              test_string2.extract_word(1).value == "z");
 } // namespace
 
 [[noreturn]] void halt() {
