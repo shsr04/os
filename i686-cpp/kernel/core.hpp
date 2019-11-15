@@ -78,7 +78,7 @@ template <class T> class dual_iterator {
     }
 };
 
-template <class T, uint32 N> class array {
+template <class T, int N> class array {
   protected:
     static_assert(N > 0, "Please do not create an empty array");
     T data_[N + 1];
@@ -93,25 +93,25 @@ template <class T, uint32 N> class array {
     template <class I> constexpr auto &operator[](I i) { return data_[i]; }
     template <class I> constexpr auto operator[](I i) const { return data_[i]; }
 
-    //  /// Get the array's internal index. (can be freely used for convenience)
-    //  constexpr auto &index() { return index_; }
-    //  /// Get the element at the internal index.
-    //  constexpr auto &operator*() { return data_[index_]; }
-    //  /// Increment the internal index.
-    //  constexpr auto operator++() { index_++; }
-
     constexpr bool operator==(const array<T, N> &p) const {
-        for (uint32 a = 0; a < N; a++) {
+        for (int a = 0; a < N; a++) {
             if (operator[](a) != p[a])
                 return false;
         }
         return true;
     }
-    template <uint32 M> constexpr auto operator+(const array<T, M> &p) const {
+    template <int M> constexpr auto operator+(const array<T, M> &p) const {
         array<T, N + M> r(data_);
         for (int a = size(); a < p.size(); a++) {
             r[a] = p[a - size()];
         }
+        return r;
+    }
+
+    constexpr auto clone() const {
+        array<T, N> r;
+        for (auto &&a : *this)
+            r[a.index] = a;
         return r;
     }
 
@@ -128,13 +128,13 @@ template <class T, uint32 N> class array {
         return r;
     }
 };
-template <uint32 N> class string : public array<char, N> {
+template <int N> class string : public array<char, N> {
     using array<char, N>::array;
 
   public:
     using array<char, N>::operator==;
     constexpr bool operator==(const char *p) const {
-        for (uint32 a = 0; a < length(); a++) {
+        for (int a = 0; a < length(); a++) {
             if (p[a] == 0 || p[a] != this->operator[](a))
                 return false;
         }
@@ -147,7 +147,7 @@ template <uint32 N> class string : public array<char, N> {
     const char *str() const { return this->data_; }
 
     constexpr auto length() const {
-        for (uint32 a = 0; a < N; a++) {
+        for (int a = 0; a < N; a++) {
             if (this->operator[](a) == 0)
                 return a;
         }
@@ -175,6 +175,39 @@ template <uint32 N> class string : public array<char, N> {
         if (seps < num)
             return {};
         return move(r);
+    }
+};
+
+class merge_sort {
+    template <class T, int N>
+    static constexpr void merge(array<T, N> &a, int i1, int im, int i2) {
+        array<T, N> c;
+        int offset = i1;
+        int ci = 0;
+        while (i1 <= im && im <= i2) {
+            if (a[i1] > a[i2])
+                c[ci++] = a[im++];
+            else
+                c[ci++] = a[i1++];
+        }
+        while (i1 <= im)
+            c[ci++] = a[i1++];
+        while (im <= i2)
+            c[ci++] = a[im++];
+        for (int d = 0; d < ci; d++) {
+            a[offset + d] = c[d];
+        }
+    }
+
+  public:
+    template <class T, int N> static constexpr auto sort(const array<T, N> &a) {
+        array<T, N> b = a.clone();
+        for (int m = 1; m < N; m *= 2) {
+            for (int i = 0; i < N - m; i += 2 * m) {
+                merge(b, i, m, min(i + 2 * m - 1, N - 1));
+            }
+        }
+        return b;
     }
 };
 
@@ -232,8 +265,8 @@ template <class T> constexpr optional<T> fail(const char *p) {
     return r;
 }
 
-constexpr uint32 digits(uint32 p) {
-    uint32 r = 0;
+constexpr int digits(int p) {
+    int r = 0;
     while (p / 10 > 0) {
         r++;
         p /= 10;
@@ -268,8 +301,7 @@ template <int B = 10, class I> constexpr auto int_to_string(I x) {
 }
 
 /// Convert a number string "x" to an integer x
-template <int B = 10, uint32 N>
-constexpr auto string_to_int(const string<N> &p) {
+template <int B = 10, int N> constexpr auto string_to_int(const string<N> &p) {
     int r = 0;
     for (auto c : p) {
         r *= B;
@@ -278,11 +310,30 @@ constexpr auto string_to_int(const string<N> &p) {
     return r;
 }
 
+template <class R, class... P> using function = R (*)(P...);
+
+template <class T> class action {
+    function<T> f_;
+
+  public:
+    action() = default;
+    action(function<T> f) : f_(f) {}
+
+    template <class U> constexpr auto bind(action<U> p) {
+        return action([this, &p] {
+            f_();
+            p.f_();
+        });
+    }
+};
+
 namespace {
-constexpr array<int, 10> test_array{5, 4, 3};
+constexpr array<int, 10> test_array{5, 4, 3, 1, 5, 20, 3, 17, 9, 1, 2};
 static_assert(test_array.size() == 10);
 constexpr auto test_iterator = *test_array.begin();
 static_assert(test_iterator.index == 0 && test_iterator == 5);
+// static_assert(merge_sort::sort(test_array) ==
+//              array<int, 10>{1, 1, 2, 3, 3, 4, 5, 5, 9, 17, 20});
 
 constexpr string<10> test_string{'9', '8', '7'};
 static_assert(test_string.length() == 3);

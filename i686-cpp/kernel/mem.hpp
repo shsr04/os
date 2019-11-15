@@ -13,11 +13,11 @@ extern "C" void *memset(void *dest, int ch, uint32 count) {
 }
 
 namespace mem {
-constexpr uint32 KB = 1024;
-constexpr uint32 MB = 1024 * KB;
+constexpr int KB = 1024;
+constexpr int MB = 1024 * KB;
 
-constexpr uint32 HEAP_START = 2 * MB;
-constexpr uint32 HEAP_END = 22 * MB;
+constexpr int HEAP_START = 2 * MB;
+constexpr int HEAP_END = 22 * MB;
 
 template <class T> class unique {
     T *value_;
@@ -27,7 +27,7 @@ template <class T> class unique {
     ~unique() { delete value_; }
 };
 
-template <uint32 N> class bit_sequence {
+template <int N> class bit_sequence {
     array<uint8, N / 8 + 1> bytes_ = {0};
 
     class bit_member {
@@ -104,7 +104,7 @@ static_assert(!bit_test[1] && !bit_test[4] && !bit_test[6]);
 
 class linked_list {
     struct node {
-        uint32 val;
+        int val;
         node *next = nullptr;
     } *head_ = nullptr, *tail_ = nullptr;
 
@@ -118,7 +118,7 @@ class linked_list {
         }
     }
 
-    void push(uint32 p) {
+    void push(int p) {
         if (head_ == nullptr) {
             head_ = new node{p};
             tail_ = head_;
@@ -127,9 +127,9 @@ class linked_list {
         tail_->next = new node{p};
     }
 
-    optional<uint32> peek() {
+    optional<int> peek() {
         if (tail_ == nullptr)
-            return fail<uint32>("List empty");
+            return fail<int>("List empty");
         return tail_->val;
     }
 };
@@ -138,8 +138,8 @@ class linked_list {
 
 namespace {
 
-template <uint32 BS, uint32 BN> class allocator {
-    uint32 next_free = 0;
+template <int BS, int BN> class allocator {
+    int next_free = 0;
     mem::bit_sequence<BN> block_list;
 
   public:
@@ -148,15 +148,15 @@ template <uint32 BS, uint32 BN> class allocator {
                       "Not enough memory");
     }
 
-    constexpr optional<uint32> find_next_free() const {
-        for (uint32 a=0; a<BN; a++) {
+    constexpr optional<int> find_next_free() const {
+        for (int a=0; a<BN; a++) {
             if (!block_list[a])
                 return a;
         }
         return {};
     }
 
-    constexpr optional<uint32 *> allocate(uint32 blocks) {
+    constexpr optional<uint32 *> allocate(int blocks) {
         if (blocks >= BN - next_free || !find_next_free())
             return fail<uint32 *>("Not enough free memory");
         auto r = reinterpret_cast<uint32 *>(mem::HEAP_START + BS * next_free);

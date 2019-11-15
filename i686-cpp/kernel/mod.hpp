@@ -6,7 +6,7 @@ namespace mod {
 
 class module_list {
     using module_proc = int (*)(void);
-    static constexpr uint32 ELF_OFFSET = 0x1000;
+    static constexpr int ELF_OFFSET = 0x1000;
     multiboot_module_t *addr_;
     int count_;
 

@@ -25,7 +25,7 @@ template <class F> class Runner {
     }
 };
 
-extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
+extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic, uint32 seed) {
     term::clear();
     term::write("Loaded GRUB info: ", int_to_string<16>(magic).str(), "\n");
 
@@ -52,8 +52,7 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
     else
         term::fatal_error("FAIL (shutting down)\n");
 
-    uint32 uninit;
-    rand::random_gen rnd(uninit);
+    rand::random_gen rnd(seed);
     while (true) {
         term::write(">  ");
         auto &&line = kbd::get_line();
@@ -126,6 +125,7 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic) {
         }
         if (command == "coredump") {
             for (auto a : range<0, (term::ROWS + 2) * term::COLS>) {
+                (void)a;
                 term::write(char('$' + (rnd.next(40))));
                 time::delay(20);
             }
