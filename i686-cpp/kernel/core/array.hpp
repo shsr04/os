@@ -113,7 +113,7 @@ template <int N> class bit_sequence {
     };
 
   public:
-    constexpr bit_sequence() {}
+    constexpr bit_sequence() = default;
     template <class... U> constexpr bit_sequence(U... p) {
         for (auto a : {static_cast<int>(p)...}) {
             set(a);

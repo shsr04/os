@@ -46,8 +46,8 @@ template <class T, class U> class pair {
     T _1;
     U _2;
 
-    pair() = default;
-    pair(T p1, U p2) : _1(p1), _2(p2) {}
+    constexpr pair() = default;
+    constexpr pair(T p1, U p2) : _1(p1), _2(p2) {}
     NO_COPY(pair)
 };
 

@@ -1,12 +1,11 @@
-template <int A, int B> class range_impl {
-    static_assert(B > A, "Cannot create an empty/inverse range");
-    int a = A, b = B;
+class range {
+    int a, b;
 
     class range_iterator {
         int value;
 
       public:
-        range_iterator(int p) : value(p) {}
+        constexpr range_iterator(int p) : value(p) {}
         constexpr auto operator*() const { return value; }
         constexpr auto operator++() {
             value++;
@@ -18,10 +17,15 @@ template <int A, int B> class range_impl {
     };
 
   public:
-    range_impl() = default;
-    NO_COPY(range_impl)
+    constexpr range(int p1, int p2) : a(min(p1, p2)), b(max(p1, p2)) {}
+    NO_COPY(range)
     constexpr auto begin() const { return range_iterator(a); }
     constexpr auto end() const { return range_iterator(b); }
 };
 
-template <int A, int B> constexpr auto range = range_impl<A, B>();
+namespace {
+constexpr range test_range(5, 10);
+static_assert(*test_range.begin() == 5);
+static_assert(*(++(++(++test_range.begin()))) == 8);
+static_assert(*(++(++(++(++(++test_range.begin()))))) == *test_range.end());
+} // namespace

@@ -12,13 +12,14 @@ constexpr int MB = 1024 * KB;
 
 template <class R, class... P> using function = R (*)(P...);
 
+#define DEF_COPY(name, mode)                                                   \
+    name(const name &) = mode;                                                 \
+    name &operator=(const name &) = mode;
 #define DEF_MOVE(name, mode)                                                   \
     name(name &&) = mode;                                                      \
     name &operator=(name &&) = mode;
-#define NO_COPY(name)                                                          \
-    name(const name &) = delete;                                               \
-    name &operator=(const name &) = delete;                                    \
-    DEF_MOVE(name, default)
+#define NO_COPY(name) DEF_COPY(name, delete) DEF_MOVE(name, default)
+#define NO_SPECIAL(name) DEF_COPY(name, delete) DEF_MOVE(name, delete)
 
 template <class T> constexpr T max(T a, T b) { return a > b ? a : b; }
 template <class T> constexpr T min(T a, T b) { return a < b ? a : b; }
@@ -32,9 +33,7 @@ template <class T> constexpr auto move(T &&t) {
     return static_cast<remove_ref<T> &&>(t);
 }
 
-/**
- * Auto-referenced by clang for some big initializations.
- */
+/// Auto-referenced by clang for some big initializations.
 extern "C" void *memset(void *dest, int ch, uint32 count) {
     for (uint32 a = 0; a < count; a++)
         reinterpret_cast<uint8 *>(dest)[a] = static_cast<uint8>(ch);

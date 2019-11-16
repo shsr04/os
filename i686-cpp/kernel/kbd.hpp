@@ -130,7 +130,7 @@ optional<char> get_ascii() {
     return {};
 }
 
-auto &get_line(bool echo = true) {
+auto &get_line(term::terminal &term, bool echo = true) {
     int b = 0;
     while (b < LINE_BUFFER.size() - 1) {
         while (!ps2::has_output_data())
@@ -142,18 +142,18 @@ auto &get_line(bool echo = true) {
 
         if(a==ASCII_BACKSPACE) {
             b--;
-            term::Term.col-=1;
-            term::write(" ");
-            term::Term.col-=1;
+            term.col-=1;
+            term.write(" ");
+            term.col-=1;
             continue;
         }
         if (echo) {
-            term::write(a);
+            term.write(a);
         }
         if (a == '\n')
             break;
         if (a == ASCII_END_OF_TEXT) {
-            term::write('\n');
+            term.write('\n');
             LINE_BUFFER[0] = 0;
             return LINE_BUFFER;
         }

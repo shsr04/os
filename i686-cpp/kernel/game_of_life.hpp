@@ -1,29 +1,30 @@
 #pragma once
 #include "core.hpp"
-#include "term.hpp"
 #include "rand.hpp"
+#include "term.hpp"
 
 class game_of_life {
-    static constexpr int height = term::ROWS, width = term::COLS;
+    static constexpr int height=term::VGA_COLS, width=term::VGA_ROWS;
     bit_sequence<height * width> board_;
     bit_sequence<height * width> marked_;
+    term::terminal &term;
 
   public:
-
-    game_of_life() {
+    game_of_life(term::terminal &t) : term(t) {
         rand::random_gen rnd;
-            for(int a=0; a<100; a++) {
-                auto x=rnd.next()%width;
-                auto y=rnd.next()%height;
-                board_[width * y + x]=1;
-            }
+        for (int a = 0; a < 100; a++) {
+            auto x = rnd.next() % width;
+            auto y = rnd.next() % height;
+            board_[width * y + x] = 1;
+        }
     }
 
     void run(int gens = 10) {
         for (int a = 0; a < gens; a++) {
             step();
             draw();
-            while(true);
+            while (true)
+                ;
         }
     }
 
@@ -31,7 +32,6 @@ class game_of_life {
     constexpr auto board(int x, int y) { return board_[width * y + x]; }
 
     void step() {
-        term::clear();
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 auto c = board(x, y);
@@ -54,10 +54,11 @@ class game_of_life {
     }
 
     void draw() {
+        term.clear();
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 auto c = board(x, y);
-                term::write(c ? 'X' : '-');
+                term.write(c ? 'X' : '-');
             }
         }
         // static int maxAlive = 0;
