@@ -1,7 +1,7 @@
 #pragma once
 #include "core.hpp"
-#include "term.hpp"
 #include "initializer_list.hpp"
+#include "term.hpp"
 
 /**
  * Auto-referenced by clang for some big initializations.
@@ -31,12 +31,12 @@ template <int N> class bit_sequence {
     array<uint8, N / 8 + 1> bytes_ = {0};
 
     class bit_member {
-         bit_sequence &b_;
+        bit_sequence &b_;
         int pos_;
         bool val_;
 
       public:
-        constexpr bit_member( bit_sequence &b, int pos)
+        constexpr bit_member(bit_sequence &b, int pos)
             : b_(b), pos_(pos), val_(b[pos]) {}
         constexpr operator bool() const { return val_; }
         constexpr void operator=(bool p) {
@@ -129,7 +129,7 @@ class linked_list {
 
     optional<int> peek() {
         if (tail_ == nullptr)
-            return fail<int>("List empty");
+            return {false, "List empty"};
         return tail_->val;
     }
 };
@@ -149,7 +149,7 @@ template <int BS, int BN> class allocator {
     }
 
     constexpr optional<int> find_next_free() const {
-        for (int a=0; a<BN; a++) {
+        for (int a = 0; a < BN; a++) {
             if (!block_list[a])
                 return a;
         }
@@ -158,7 +158,7 @@ template <int BS, int BN> class allocator {
 
     constexpr optional<uint32 *> allocate(int blocks) {
         if (blocks >= BN - next_free || !find_next_free())
-            return fail<uint32 *>("Not enough free memory");
+            return {false, "Not enough free memory"};
         auto r = reinterpret_cast<uint32 *>(mem::HEAP_START + BS * next_free);
         next_free = find_next_free().value;
         return r;
@@ -167,7 +167,7 @@ template <int BS, int BN> class allocator {
     constexpr optional<bool> deallocate(void *p) {
         auto target = reinterpret_cast<uint32>(p) - mem::HEAP_START;
         if (!block_list[target]) {
-            return fail<bool>("Deallocating already free block");
+            return {false, "Deallocating already free block"};
         }
         block_list.set(target, false);
         next_free = find_next_free().value;
