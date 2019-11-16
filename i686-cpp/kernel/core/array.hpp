@@ -76,3 +76,78 @@ template <class T, int N> class array {
         return r;
     }
 };
+
+template <int N> class bit_sequence {
+    array<uint8, N / 8 + 1> bytes_ = {0};
+
+    class bit_member {
+        bit_sequence &b_;
+        int pos_;
+        bool val_;
+
+      public:
+        constexpr bit_member(bit_sequence &b, int pos)
+            : b_(b), pos_(pos), val_(b[pos]) {}
+        constexpr operator bool() const { return val_; }
+        constexpr void operator=(bool p) {
+            b_.bytes_[pos_ / 8] &= (p << (pos_ % 8));
+        }
+        constexpr int index() const { return pos_; }
+    };
+
+    class bit_iterator {
+        bit_sequence &b_;
+        int pos_;
+
+      public:
+        constexpr bit_iterator(bit_sequence &b, int pos = 0)
+            : b_(b), pos_(pos) {}
+        constexpr auto &operator++() {
+            pos_++;
+            return *this;
+        }
+        constexpr bit_member operator*() { return b_[pos_]; }
+        constexpr auto operator!=(bit_iterator p) const {
+            return pos_ != p.pos_;
+        }
+    };
+
+  public:
+    constexpr bit_sequence() {}
+    template <class... U> constexpr bit_sequence(U... p) {
+        for (auto a : {static_cast<int>(p)...}) {
+            set(a);
+        }
+    }
+
+    template <class I> constexpr bool operator[](I i) const {
+        auto b = bytes_[i / 8];
+        return (b & (1 << (i % 8))) != 0;
+    }
+    template <class I> constexpr bit_member operator[](I i) {
+        return bit_member(*this, static_cast<int>(i));
+    }
+    constexpr auto begin() { return bit_iterator(*this); }
+    constexpr auto end() { return bit_iterator(*this, N); }
+    constexpr auto size() const { return N; }
+
+    template <class I> constexpr void set(I i, bool x = true) {
+        auto &b = bytes_[i / 8];
+        if (x)
+            b |= (1 << (i % 8));
+        else
+            b &= ~(1 << (i % 8));
+    }
+
+    constexpr bool is_empty() const {
+        for (auto b : *this) {
+            if (b)
+                return false;
+        }
+        return true;
+    }
+};
+
+constexpr bit_sequence<10> bit_test(2, 5, 7);
+static_assert(bit_test[2] && bit_test[5] && bit_test[7]);
+static_assert(!bit_test[1] && !bit_test[4] && !bit_test[6]);

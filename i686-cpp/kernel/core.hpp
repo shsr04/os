@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/defs.hpp"
+#include "initializer_list.hpp"
 
 #include "core/array.hpp"
 #include "core/optional.hpp"

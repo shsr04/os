@@ -6,7 +6,6 @@
 #include "kernel/game_of_life.hpp"
 #include "kernel/initializer_list.hpp"
 #include "kernel/kbd.hpp"
-#include "kernel/mem.hpp"
 #include "kernel/mod.hpp"
 #include "kernel/multiboot.h"
 #include "kernel/ps2.hpp"
@@ -42,7 +41,7 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic, uint32 seed) {
 
     if ((mb->flags & 1) == 1) {
         term::write("Mem size: ",
-                    int_to_string(mb->mem_upper * mem::KB / mem::MB).str(),
+                    int_to_string(mb->mem_upper * KB / MB).str(),
                     " MB\n");
     }
 

@@ -1,13 +1,12 @@
 #pragma once
 #include "core.hpp"
-#include "mem.hpp"
 #include "term.hpp"
 #include "rand.hpp"
 
 class game_of_life {
     static constexpr int height = term::ROWS, width = term::COLS;
-    mem::bit_sequence<height * width> board_;
-    mem::bit_sequence<height * width> marked_;
+    bit_sequence<height * width> board_;
+    bit_sequence<height * width> marked_;
 
   public:
 

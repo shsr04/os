@@ -7,6 +7,9 @@ static_assert(sizeof(uint16) == 2);
 static_assert(sizeof(uint32) == 4);
 static_assert(sizeof(int) == 4);
 
+constexpr int KB = 1024;
+constexpr int MB = 1024 * KB;
+
 template <class R, class... P> using function = R (*)(P...);
 
 #define DEF_MOVE(name, mode)                                                   \
@@ -27,4 +30,13 @@ template <class T> using remove_ref = typename remove_ref_impl<T>::type;
 
 template <class T> constexpr auto move(T &&t) {
     return static_cast<remove_ref<T> &&>(t);
+}
+
+/**
+ * Auto-referenced by clang for some big initializations.
+ */
+extern "C" void *memset(void *dest, int ch, uint32 count) {
+    for (uint32 a = 0; a < count; a++)
+        reinterpret_cast<uint8 *>(dest)[a] = static_cast<uint8>(ch);
+    return dest;
 }
