@@ -49,7 +49,15 @@ template <class T, class U> class pair {
     constexpr pair() = default;
     constexpr pair(T p1, U p2) : _1(p1), _2(p2) {}
     NO_COPY(pair)
+    constexpr auto operator==(const pair<T, U> &p) const {
+        return _1 == p._1 && _2 == p._2;
+    }
+    constexpr auto operator!=(const pair<T, U> &p) const { return !operator==(p); }
 };
+
+template <class T, class U> constexpr pair<T, U> zip(T a, U b) {
+    return {a, b};
+}
 
 constexpr int digits(int p) {
     int r = 0;

@@ -12,6 +12,7 @@
 #include "kernel/rand.hpp"
 #include "kernel/term.hpp"
 #include "kernel/time.hpp"
+#include "category.hpp"
 
 extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic, uint32 seed) {
     term::terminal term(term::VGA_COLS, term::VGA_ROWS);
