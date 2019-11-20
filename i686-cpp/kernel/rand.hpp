@@ -3,69 +3,36 @@
 
 namespace rand {
 
-/*
-   A C-program for MT19937, with initialization improved 2002/1/26.
-   Coded by Takuji Nishimura and Makoto Matsumoto.
-*/
-
-/* Period parameters */
-
+/// Ranlim32, as designed by Press et al. (Numerical Recipes, 3rd edition)
 class random_gen {
-    static constexpr uint32 N = 624;
-    static constexpr uint32 M = 397;
-    static constexpr uint32 MATRIX_A = 0x9908b0dfUL; /* constant vector a */
-    static constexpr uint32 UPPER_MASK =
-        0x80000000UL; /* most significant w-r bits */
-    static constexpr uint32 LOWER_MASK =
-        0x7fffffffUL; /* least significant r bits */
-
-    static constexpr array<uint32, 2> MAG01{0x0UL, MATRIX_A};
-
-    array<uint32, N> mt; /* the array for the state vector  */
-    uint32 mti = N + 1;  /* mti==N+1 means mt[N] is not initialized */
+    uint32 v = 2244614371, w1 = 521288629, w2 = 362436069;
+    uint32 u;
 
   public:
-    random_gen(uint32 seed = 5489) {
-        mt[0] = seed & static_cast<uint32>(~0);
-        for (mti = 1; mti < N; mti++) {
-            mt[mti] =
-                (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
-            mt[mti] &= static_cast<uint32>(~0);
-        }
+    constexpr random_gen(uint32 seed) : u(seed ^ v) {
+        next();
+        v = u;
+        next();
     }
 
-    uint32 next(uint32 limit = 0) {
-        uint32 y = 0;
-
-        if (mti >= N) { /* generate N words at one time */
-            uint32 kk = 0;
-
-            for (; kk < N - M; kk++) {
-                y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-                mt[kk] = mt[kk + M] ^ (y >> 1) ^ MAG01[y & 0x1UL];
-            }
-            for (; kk < N - 1; kk++) {
-                y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-                mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ MAG01[y & 0x1UL];
-            }
-            y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
-            mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ MAG01[y & 0x1UL];
-
-            mti = 0;
-        }
-
-        y = mt[mti++];
-
-        /* Tempering */
-        y ^= (y >> 11);
-        y ^= (y << 7) & 0x9d2c5680UL;
-        y ^= (y << 15) & 0xefc60000UL;
-        y ^= (y >> 18);
-
+    constexpr uint32 next(uint32 limit = 0) {
+        u = u * 2891336453 + 1640531513;
+        v ^= v >> 13;
+        v ^= v << 17;
+        v ^= v >> 5;
+        w1 = 33378 * (w1 & 0xffff) + (w1 >> 16);
+        w2 = 57225 * (w2 & 0xffff) + (w2 >> 16);
+        uint32 x = u ^ (u << 9);
+        x ^= x >> 17;
+        x ^= x << 6;
+        uint32 y = w1 ^ (w1 << 17);
+        y ^= y >> 15;
+        y ^= y << 5;
+        uint32 r = (x + v) ^ (y + w2);
         if (limit == 0)
-            return y;
+            return r;
         else
-            return y % limit;
+            return r % limit;
     }
 };
 

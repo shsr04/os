@@ -5,9 +5,7 @@
 
 namespace kbd {
 
-string<80> LINE_BUFFER;
-
-enum special_ascii : char { ASCII_END_OF_TEXT = 0x3, ASCII_BACKSPACE=0x8 };
+enum special_ascii : char { ASCII_END_OF_TEXT = 0x3, ASCII_BACKSPACE = 0x8 };
 
 optional<char> get_ascii() {
     static bool ctrl_pressed = false;
@@ -130,9 +128,10 @@ optional<char> get_ascii() {
     return {};
 }
 
-auto &get_line(term::terminal &term, bool echo = true) {
+auto get_line(term::terminal &term, bool echo = true) {
+    string<80> r;
     int b = 0;
-    while (b < LINE_BUFFER.size() - 1) {
+    while (b < r.size() - 1) {
         while (!ps2::has_output_data())
             ;
         auto _a = get_ascii();
@@ -140,11 +139,11 @@ auto &get_line(term::terminal &term, bool echo = true) {
             continue;
         char a = _a.value;
 
-        if(a==ASCII_BACKSPACE) {
+        if (a == ASCII_BACKSPACE) {
             b--;
-            term.col-=1;
+            term.col -= 1;
             term.write(" ");
-            term.col-=1;
+            term.col -= 1;
             continue;
         }
         if (echo) {
@@ -154,14 +153,14 @@ auto &get_line(term::terminal &term, bool echo = true) {
             break;
         if (a == ASCII_END_OF_TEXT) {
             term.write('\n');
-            LINE_BUFFER[0] = 0;
-            return LINE_BUFFER;
+            r[0] = 0;
+            return r;
         }
-        
-        LINE_BUFFER[b++] = a;
+
+        r[b++] = a;
     }
-    LINE_BUFFER[b] = 0;
-    return LINE_BUFFER;
+    r[b] = 0;
+    return r;
 }
 
 } // namespace kbd

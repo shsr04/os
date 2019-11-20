@@ -3,17 +3,17 @@
 
 /// A category C consists of:
 ///   1. a set of objects Ob(C)
-///   2. for each pair of objects, a set of (homo)morphisms Hom(x,y)
-///   3. for each object x, an identity morphism id(x) ϵ Hom(x,x)
-///   4. a composition formula *: Hom(x,y),Hom(y,z)=Hom(x,z)
-///   where multiple morphisms can be composed in any order
+///   2. a set of morphisms Hom(t,u) ⊆ {t->u | t,uϵOb(C)}
+///   3. for each object t, an identity morphism id(t) ϵ HomC(t,t)
+///   4. a composition formula ∘: (t->u)⨯(u->v) -> (t->v) where t,u,vϵOb(C)
+///   where multiple morphisms can be composed associatively
 ///     and the identity morphism is "neutral"
 
 /// A monoid M[T,op,nil] consists of:
-///   1. a singleton set Ob(M)={#}
-///   2. a morphism Hom(#,#)=T
-///   3. an identity id(#)=nil
-///   4. a composition formula *(h1,h2)=op(h1,h2)
+///   1. a singleton set Ob(M):={#}
+///   2. a morphism HomM(#,#):={t | tϵT}
+///   3. an identity id(#):=nil
+///   4. a composition formula ∘:=op
 /// Example: the additive monoid of natural numbers: (N,+,0)
 template <class T, T N, function<T, T, T> F> class Monoid {
   public:
@@ -26,7 +26,7 @@ template <class T, T N, function<T, T, T> F> class Monoid {
 };
 
 /// A group G is a monoid
-///   where each object x has an inverse such that op(x,x')=nil
+///   where each object x has an inverse x' such that x∘x'=id(#)
 template <class T, T N, function<T, T, T> F, function<T, T> I>
 class Group : public Monoid<T, N, F> {
     using Monoid<T, N, F>::id;
@@ -36,13 +36,15 @@ class Group : public Monoid<T, N, F> {
     constexpr Monoid<T, N, F> inv() const { return F(I(id())); }
 };
 
-/// A functor F[C->C'] consists of:
-///   1. a function Ob(F)=f: Ob(C)->Ob(C')
-///   2. for each pair t1,t2 ϵ Ob(C), a function HomF(t1,t2):
-///   HomC(t1,t2)->HomC'(f(t1),f(t2))
-///   so that f(id(x))=id(f(x)) and f(h1;h2(t))=f(h1(t));f(h2(t))
+/// A functor F: C->C' is a morphism from C to C' that satisfies:
+///   1. F(h: t->u) = F(h): F(t)->F(u)
+///   2. F(id(t)) = id(F(t))
+///   3. F(h'∘h)=F(h')∘F(h)
+///   where t,uϵOb(C) and h,h'ϵHomC(t,u)
+///   (Note: in the category of categories `Cat`, categories are the objects
+///   Ob(Cat) and functors are the morphisms HomCat(C,C'))
 ///
-/// Example: F[int -> pair<int>] has f(x)=make_pair(x,x)
+/// Example: F: int -> pair[int] is F(x) = make_pair(x,x)
 ///   where each arithmetic operation shall also be defined on pairs
 template <template <class, int> class C /*< container class*/, class T, class U>
 class Functor {
@@ -54,11 +56,12 @@ class Functor {
     }
 };
 
-/// A natural transformation A[F->G] from F[C->C'] to G[C->C'] consists of:
-///   1. for each t ϵ Ob(C), a morphism A_t: f(t)->g(t) ϵ C'->C'
-///   (Reminder: f=Ob(F) and g=Ob(G))
-///   where for each t,u ϵ Ob(C) and hom: C'->C' ϵ HomC'(f(t),f(u)),
-///     we have g(u) = A_u(hom(f(t))) = hom(A_t(f(t)))
+/// A natural transformation A: F->G is a set of morphisms {A(t): F(t)->G(t) |
+/// tϵOb(C)} that satisfies:
+///   1. A(u)∘F(h) = G(h)∘A(t)
+///   where t,uϵOb(C), h:t->uϵHomC(t,u) and F,G:C->C'ϵHomCat(C,C')
+/// (Note: in the category of functors `Fun`(C,C'), functors C->C' are the
+/// objects Ob(Fun) and natural tranformations are the morphisms HomFun(F,G))
 ///
 ///   Example: F[int->pair<int,int>], G[int->pair<int>],
 ///   h: pair<int>->pair<int> = ({x1,x2},{y1,y2})={x1,y1}

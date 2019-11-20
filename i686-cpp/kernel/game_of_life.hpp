@@ -11,7 +11,7 @@ class game_of_life {
 
   public:
     game_of_life(term::terminal &t) : term(t) {
-        rand::random_gen rnd;
+        rand::random_gen rnd(34);
         for (int a = 0; a < 100; a++) {
             auto x = rnd.next() % width;
             auto y = rnd.next() % height;

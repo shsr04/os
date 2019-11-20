@@ -23,6 +23,7 @@ template <class R, class... P> using function = R (*)(P...);
 
 template <class T> constexpr T max(T a, T b) { return a > b ? a : b; }
 template <class T> constexpr T min(T a, T b) { return a < b ? a : b; }
+template <class T> constexpr T abs(T a) { return a >= 0 ? a : -a; }
 
 template <class T> struct remove_ref_impl { using type = T; };
 template <class T> struct remove_ref_impl<T &> { using type = T; };
@@ -37,5 +38,11 @@ template <class T> constexpr auto move(T &&t) {
 extern "C" void *memset(void *dest, int ch, uint32 count) {
     for (uint32 a = 0; a < count; a++)
         reinterpret_cast<uint8 *>(dest)[a] = static_cast<uint8>(ch);
+    return dest;
+}
+extern "C" void *memcpy(void *dest, const void *src, uint32 count) {
+    for (uint32 a = 0; a < count; a++)
+        reinterpret_cast<uint8 *>(dest)[a] =
+            *reinterpret_cast<const uint8 *>(src);
     return dest;
 }
