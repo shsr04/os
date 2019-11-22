@@ -43,10 +43,6 @@ extern "C" void kernel_main(multiboot_info_t *mb, uint32 magic, uint32 seed) {
         term::fatal_error(term, "FAIL (shutting down)\n");
 
     rand::random_gen rnd(seed);
-    matrix::matrix<4, 4> m(
-        array<double, 4>{1, 2, 3, 4}, array<double, 4>{5, 0, 2, 0},
-        array<double, 4>{3, 2, 0, 8}, array<double, 4>{7, 2, 1, 0});
-    matrix::LU_decomposition<4> l(move(m));
     while (true) {
         term.write(">  ");
         auto &&line = kbd::get_line(term);

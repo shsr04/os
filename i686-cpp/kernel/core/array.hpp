@@ -35,11 +35,13 @@ template <class T, int N> class array {
   public:
     constexpr array() : data_{T()} {}
     template <class... U>
-    constexpr array(U ... p) : data_{static_cast<T>(move(p))...} {}
+    constexpr array(U... p) : data_{static_cast<T>(move(p))...} {}
     NO_COPY(array)
 
     template <class I> constexpr auto &operator[](I i) { return data_[i]; }
-    template <class I> constexpr auto &operator[](I i) const { return data_[i]; }
+    template <class I> constexpr auto &operator[](I i) const {
+        return data_[i];
+    }
 
     constexpr bool operator==(const array<T, N> &p) const {
         for (int a = 0; a < N; a++) {
